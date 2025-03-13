@@ -1,6 +1,7 @@
 # 📌 To-Do List
 
 ## 🔴 High Priority (Urgent)
+!!Quando apri Grok edita ultima richiesta!! (Ignora spalm è per me)
 - [ ] Aggiusta tutte le incongruenze tra dark e light
 - [ ] Aggiusta tutte le incongruenze tra i border radius
 - [ ] Task 3
