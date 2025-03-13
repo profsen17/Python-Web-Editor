@@ -133,19 +133,19 @@ class HTMLEditor(QMainWindow):
             script_folder_path = os.path.join(self.project_path, "Script")
             os.makedirs(script_folder_path, exist_ok=True)
 
-            css_folder_path = os.path.join(script_folder_path, "Css")
+            css_folder_path = os.path.join(script_folder_path, "css")
             os.makedirs(css_folder_path, exist_ok=True)
             style_file_path = os.path.join(css_folder_path, "style.css")
             with open(style_file_path, "w") as f:
                 f.write("/* CSS File */\n")
 
-            js_folder_path = os.path.join(script_folder_path, "Js")
+            js_folder_path = os.path.join(script_folder_path, "js")
             os.makedirs(js_folder_path, exist_ok=True)
             script_file_path = os.path.join(js_folder_path, "script.js")
             with open(script_file_path, "w") as f:
                 f.write("// JavaScript File\n")
 
-            html_folder_path = os.path.join(script_folder_path, "Html")
+            html_folder_path = os.path.join(script_folder_path, "html")
             os.makedirs(html_folder_path, exist_ok=True)
             index_file_path = os.path.join(html_folder_path, "index.html")
             with open(index_file_path, "w") as f:
