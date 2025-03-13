@@ -1,8 +1,8 @@
 # 📌 To-Do List
 
 ## 🔴 High Priority (Urgent)
-- [x] Task 1
-- [ ] Task 2
+- [ ] Aggiusta tutte le incongruenze tra dark e light
+- [ ] Aggiusta tutte le incongruenze tra i border radius
 - [ ] Task 3
 
 ## 🟠 Medium Priority (Important)
