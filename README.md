@@ -1,6 +1,8 @@
-# Python + PyQt Design for Web Apps
+# Python Web Code Editor: HTML, CSS, and JavaScript
 
-Welcome to the **Python + PyQt Design for Web Apps** project! This is an innovative solution that combines the power of Python with the flexibility and beauty of PyQt to design web applications. Whether you are building the front-end for a web app or crafting a desktop-like experience with a web app’s UI, this project serves as the perfect foundation for both beginners and experienced developers who want to create responsive, modern, and visually appealing web interfaces.
+Welcome to the **Python Web Code Editor**! This is a simple yet powerful Python application that helps you write, edit, and manage **HTML**, **CSS**, and **JavaScript** code with ease. Whether you're a beginner looking to learn the fundamentals of web development or an experienced developer needing a lightweight editor, this program provides the perfect environment to code for the web.
+
+The goal of this project is to provide a **local desktop** solution for editing web code in an intuitive way, combining the power of Python with a user-friendly interface powered by **PyQt**.
 
 ## 📜 Table of Contents
 
@@ -10,48 +12,49 @@ Welcome to the **Python + PyQt Design for Web Apps** project! This is an innovat
 - [Installation](#installation)
 - [Usage](#usage)
 - [Architecture](#architecture)
-- [UI Design](#ui-design)
 - [Contributing](#contributing)
 - [License](#license)
 - [Acknowledgments](#acknowledgments)
 
 ## 📝 Introduction
 
-This project allows you to design and prototype web-like user interfaces (UIs) using **Python** and **PyQt** framework. PyQt provides bindings for the Qt toolkit, which is widely used to build cross-platform applications. Here, we leverage this power to create dynamic UIs that are perfect for web apps, allowing developers to explore and test design concepts with Python.
+This project provides a GUI-based Python program that serves as a code editor specifically designed for web development. With this editor, you can write **HTML**, **CSS**, and **JavaScript** in an integrated, easy-to-use environment. The editor supports features that make coding more efficient and accessible, including syntax highlighting, live preview, and error detection.
 
-While PyQt itself is designed for desktop applications, by using its capabilities in this context, we combine the functionality and smooth UX of a desktop app with the flexibility and rich features that you would expect in a web app. The project provides both a UI design platform and a set of tools to connect the design with backend services, making it an excellent choice for prototyping or as a production-ready solution.
+You can think of this editor as a lightweight alternative to heavy IDEs, but specifically tailored to work with web technologies.
 
 ## 🚀 Features
 
-- **Interactive Web-like UI**: Build visually appealing and intuitive UIs that simulate web apps, but with the fluidity of desktop applications.
-- **Cross-Platform**: Runs on Windows, macOS, and Linux, making it ideal for diverse environments.
-- **Easy Integration with Web Services**: Seamlessly connect with web APIs, databases, or other services to enhance the functionality of your UI.
-- **Responsive Design**: The UI components are designed to automatically adjust and look great on different screen sizes and resolutions, similar to how responsive web designs work.
-- **Fast Prototyping**: Quickly create and test web app designs without having to write the full codebase for a web app.
-- **Customizable Widgets**: Leverage pre-built widgets or create custom components using Python, which can be embedded directly into the UI.
-- **State Persistence**: Store UI state, such as user preferences or forms, in local files or databases, making it easy to recall data when the app restarts.
-- **Themes and Styling**: Customize the appearance using PyQt’s styling capabilities, giving your app a modern, polished look.
-  
+- **HTML, CSS, JavaScript Editing**: Write clean and efficient web code with dedicated editors for HTML, CSS, and JavaScript.
+- **Syntax Highlighting**: Each language has its own syntax highlighting to make code more readable and easier to debug.
+- **Live Preview**: See the output of your HTML, CSS, and JavaScript code in real-time with an embedded web preview.
+- **Error Detection**: Alerts you to common syntax errors in HTML, CSS, and JavaScript, making your development process smoother.
+- **Code Auto-Completion**: Basic code completion suggestions for HTML tags, CSS properties, and JavaScript functions.
+- **File Management**: Open, save, and organize your code files easily through an intuitive interface.
+- **Cross-Platform**: The editor runs on Windows, macOS, and Linux.
+- **Customizable Interface**: Change themes and layouts to match your coding style.
+- **Lightweight**: A simple application that doesn't consume much system resource, perfect for web development on the go.
+
 ## 🖥️ Tech Stack
 
-- **Python**: The core programming language for writing the app logic.
-- **PyQt**: Python bindings for Qt, which powers the UI components and layout system.
-- **Qt Designer**: A visual tool to design the interface of the application (optional, but highly recommended for rapid UI design).
-- **SQLite (Optional)**: For local data storage (can be swapped with other databases or web services).
-- **HTML/CSS (optional)**: Can be integrated for richer web-like styling (via QWebEngineView).
-  
+- **Python 3.x**: The primary language used for the program's backend logic.
+- **PyQt5**: A powerful library that allows the creation of desktop applications with Python, used here to build the graphical user interface.
+- **QWebEngineView**: Embedded web viewer used to show live previews of HTML files.
+- **QSyntaxHighlighter**: Used to implement syntax highlighting for HTML, CSS, and JavaScript.
+- **SQLite (optional)**: For storing custom user preferences or settings (optional).
+- **Web Technologies (HTML/CSS/JS)**: The editor itself allows you to write these languages, making them the core content.
+
 ## 🛠️ Installation
 
-To get started with this project, you'll need to install the following dependencies:
+To get started with this project, follow the steps below to install the editor and its dependencies.
 
 ### Prerequisites
 
-- Python 3.6 or later
+- Python 3.6 or higher
 - pip (Python package installer)
 
 ### Step-by-Step Guide
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/yourusername/pyqt-webapp-design.git
-   cd pyqt-webapp-design
+   git clone https://github.com/yourusername/python-web-code-editor.git
+   cd python-web-code-editor
