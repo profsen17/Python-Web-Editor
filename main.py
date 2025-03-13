@@ -34,7 +34,7 @@ class HTMLEditor(QMainWindow):
         sidebar_layout = QVBoxLayout()
         
         self.search_bar = QLineEdit()
-        self.search_bar.setPlaceholderText("Cerca file...")
+        self.search_bar.setPlaceholderText("Cerca file (fuzzy search)...")
         self.search_bar.textChanged.connect(self.filter_files)
         self.search_bar.setVisible(False)
         sidebar_layout.addWidget(self.search_bar)
@@ -85,41 +85,176 @@ class HTMLEditor(QMainWindow):
         self.createMenu()
         self.apply_theme()
         self.show()
-
+    
     def apply_theme(self):
         if self.is_dark_mode:
             self.setStyleSheet("""
-                QMainWindow { background-color: #2b2b2b; color: #ffffff; }
-                QToolBar { background-color: #3c3f41; border: none; border-radius: 10px; padding: 5px; }
-                QPushButton { background-color: #4a4a4a; color: #ffffff; border: none; border-radius: 8px; padding: 5px; }
-                QPushButton:hover { background-color: #5a5a5a; }
-                QTextEdit { background-color: #1e1e1e; color: #ffffff; border: 1px solid #555555; border-radius: 10px; padding: 5px; }
-                QTreeWidget { background-color: #333333; color: #ffffff; border: 1px solid #555555; border-radius: 10px; }
-                QTreeWidget::item:hover { background-color: #444444; }
-                QTreeWidget::item:selected { background-color: #5a5a5a; color: #ffffff; }
-                QTreeWidget::item:selected:hover { background-color: #666666; color: #ffffff; }
-                QHeaderView::section { background-color: #3c3f41; color: #ffffff; border: none; padding: 5px; }
-                QLineEdit { background-color: #3c3f41; color: #ffffff; border: 1px solid #555555; border-radius: 8px; padding: 5px; }
-                QSplitter::handle { background-color: #555555; border-radius: 5px; }
-                QMenu { background-color: #3c3f41; color: #ffffff; border: 1px solid #555555; border-radius: 5px; }
-                QMenu::item:selected { background-color: #5a5a5a; }
+                QMainWindow { 
+                    background-color: #2b2b2b; 
+                    color: #ffffff; 
+                }
+                QToolBar { 
+                    background-color: #3c3f41; 
+                    border: none; 
+                    border-radius: 10px; 
+                    padding: 5px; 
+                }
+                QPushButton { 
+                    background-color: #4a4a4a; 
+                    color: #ffffff; 
+                    border: none; 
+                    border-radius: 8px; 
+                    padding: 5px; 
+                }
+                QPushButton:hover { 
+                    background-color: #5a5a5a; 
+                }
+                QTextEdit { 
+                    background-color: #1e1e1e; 
+                    color: #ffffff; 
+                    border: 1px solid #555555; 
+                    border-radius: 10px; 
+                    padding: 5px; 
+                }
+                QTreeWidget { 
+                    background-color: #333333; 
+                    color: #ffffff; 
+                    border: 1px solid #555555; 
+                    border-radius: 10px; 
+                }
+                QTreeWidget::item:hover { 
+                    background-color: #444444; 
+                }
+                QTreeWidget::item:selected { 
+                    background-color: #5a5a5a; 
+                    color: #ffffff; 
+                }
+                QTreeWidget::item:selected:hover { 
+                    background-color: #666666; 
+                    color: #ffffff; 
+                }
+                QHeaderView::section { 
+                    background-color: #3c3f41; 
+                    color: #ffffff; 
+                    border: none; 
+                    padding: 5px; 
+                    border-top-left-radius: 10px; 
+                    border-top-right-radius: 10px; 
+                }
+                QLineEdit { 
+                    background-color: #3c3f41; 
+                    color: #ffffff; 
+                    border: 1px solid #555555; 
+                    border-radius: 8px; 
+                    padding: 5px; 
+                    min-height: 30px;
+                }
+                QTreeWidget QLineEdit { 
+                    min-height: 30px; 
+                    padding: 5px; 
+                    font-size: 14px; 
+                }
+                QSplitter::handle { 
+                    background-color: #555555; 
+                    border-radius: 5px; 
+                }
+                QMenu { 
+                    background-color: #3c3f41; 
+                    color: #ffffff; 
+                    border: 1px solid #555555; 
+                    padding: 5px;        /* Added padding for better spacing */
+                }
+                QMenu::item { 
+                    padding: 5px 25px 5px 25px;  /* Adjusted padding for icons */
+                }
+                QMenu::item:selected { 
+                    background-color: #5a5a5a; 
+                }
             """)
         else:
             self.setStyleSheet("""
-                QMainWindow { background-color: #f0f0f0; color: #000000; }
-                QToolBar { background-color: #e0e0e0; border: none; border-radius: 10px; padding: 5px; }
-                QPushButton { background-color: #d0d0d0; color: #000000; border: none; border-radius: 8px; padding: 5px; }
-                QPushButton:hover { background-color: #c0c0c0; }
-                QTextEdit { background-color: #ffffff; color: #000000; border: 1px solid #cccccc; border-radius: 10px; padding: 5px; }
-                QTreeWidget { background-color: #ffffff; color: #000000; border: 1px solid #cccccc; border-radius: 10px; }
-                QTreeWidget::item:hover { background-color: #f5f5f5; }
-                QTreeWidget::item:selected { background-color: #d0d0d0; color: #000000; }
-                QTreeWidget::item:selected:hover { background-color: #c0c0c0; color: #000000; }
-                QHeaderView::section { background-color: #e0e0e0; color: #000000; border: none; padding: 5px; }
-                QLineEdit { background-color: #e0e0e0; color: #000000; border: 1px solid #cccccc; border-radius: 8px; padding: 5px; }
-                QSplitter::handle { background-color: #cccccc; border-radius: 5px; }
-                QMenu { background-color: #e0e0e0; color: #000000; border: 1px solid #cccccc; border-radius: 5px; }
-                QMenu::item:selected { background-color: #d0d0d0; }
+                QMainWindow { 
+                    background-color: #f0f0f0; 
+                    color: #000000; 
+                }
+                QToolBar { 
+                    background-color: #e0e0e0; 
+                    border: none; 
+                    border-radius: 10px; 
+                    padding: 5px; 
+                }
+                QPushButton { 
+                    background-color: #d0d0d0; 
+                    color: #000000; 
+                    border: none; 
+                    border-radius: 8px; 
+                    padding: 5px; 
+                }
+                QPushButton:hover { 
+                    background-color: #c0c0c0; 
+                }
+                QTextEdit { 
+                    background-color: #ffffff; 
+                    color: #000000; 
+                    border: 1px solid #cccccc; 
+                    border-radius: 10px; 
+                    padding: 5px; 
+                }
+                QTreeWidget { 
+                    background-color: #ffffff; 
+                    color: #000000; 
+                    border: 1px solid #cccccc; 
+                    border-radius: 10px; 
+                }
+                QTreeWidget::item:hover { 
+                    background-color: #f5f5f5; 
+                }
+                QTreeWidget::item:selected { 
+                    background-color: #d0d0d0; 
+                    color: #000000; 
+                }
+                QTreeWidget::item:selected:hover { 
+                    background-color: #c0c0c0; 
+                    color: #000000; 
+                }
+                QHeaderView::section { 
+                    background-color: #e0e0e0; 
+                    color: #000000; 
+                    border: none; 
+                    padding: 5px; 
+                    border-top-left-radius: 10px; 
+                    border-top-right-radius: 10px; 
+                }
+                QLineEdit { 
+                    background-color: #e0e0e0; 
+                    color: #000000; 
+                    border: 1px solid #cccccc; 
+                    border-radius: 8px; 
+                    padding: 5px; 
+                    min-height: 11px; 
+                }
+                QTreeWidget QLineEdit { 
+                    min-height: 11px; 
+                    padding: 5px; 
+                    font-size: 11px; 
+                }
+                QSplitter::handle { 
+                    background-color: #cccccc; 
+                    border-radius: 5px; 
+                }
+                QMenu { 
+                    background-color: #e0e0e0; 
+                    color: #000000; 
+                    border: 1px solid #cccccc; 
+                    border-radius: 10px;  /* Changed from 5px to 10px */
+                    padding: 5px;        /* Added padding for better spacing */
+                }
+                QMenu::item { 
+                    padding: 5px 25px 5px 25px;  /* Adjusted padding for icons */
+                }
+                QMenu::item:selected { 
+                    background-color: #d0d0d0; 
+                }
             """)
 
     def animate_button(self, button):
@@ -207,7 +342,6 @@ class HTMLEditor(QMainWindow):
             self.restore_expanded_state(item.child(i))
 
     def filter_files(self, text):
-        """Fuzzy search implementation."""
         if not self.project_path:
             return
 
@@ -233,9 +367,8 @@ class HTMLEditor(QMainWindow):
                 if filename.startswith('.'):
                     continue
                 file_no_spaces = filename.replace(" ", "").lower()
-                # Use fuzzy matching with a threshold
                 match_score = fuzz.partial_ratio(search_text, file_no_spaces)
-                if match_score >= 70:  # Threshold: 70% similarity
+                if match_score >= 70:
                     rel_path = os.path.relpath(os.path.join(dirpath, filename), self.project_path)
                     path_parts = rel_path.split(os.sep)
                     
@@ -380,14 +513,33 @@ class HTMLEditor(QMainWindow):
         
         if item:
             if self.is_folder(item):
-                menu.addAction("Aggiungi File", lambda: self.addFile(item))
-                menu.addAction("Aggiungi Cartella", lambda: self.addFolder(item))
-                menu.addAction("Rinomina", lambda: self.start_rename(item))
-                menu.addAction("Elimina", lambda: self.delete_item(item))
+                add_file_action = QAction(QIcon("icons/file-add.png"), "Aggiungi File", self)
+                add_file_action.triggered.connect(lambda: self.addFile(item))
+                menu.addAction(add_file_action)
+                
+                add_folder_action = QAction(QIcon("icons/folder-add.png"), "Aggiungi Cartella", self)
+                add_folder_action.triggered.connect(lambda: self.addFolder(item))
+                menu.addAction(add_folder_action)
+                
+                rename_action = QAction(QIcon("icons/rename.png"), "Rinomina", self)
+                rename_action.triggered.connect(lambda: self.start_rename(item))
+                menu.addAction(rename_action)
+                
+                delete_action = QAction(QIcon("icons/delete.png"), "Elimina", self)
+                delete_action.triggered.connect(lambda: self.delete_item(item))
+                menu.addAction(delete_action)
             else:
-                menu.addAction("Rinomina", lambda: self.start_rename(item))
-                menu.addAction("Elimina", lambda: self.delete_item(item))
-            menu.addAction("Apri in Explorer", lambda: self.open_in_explorer(item))
+                rename_action = QAction(QIcon("icons/rename.png"), "Rinomina", self)
+                rename_action.triggered.connect(lambda: self.start_rename(item))
+                menu.addAction(rename_action)
+                
+                delete_action = QAction(QIcon("icons/delete.png"), "Elimina", self)
+                delete_action.triggered.connect(lambda: self.delete_item(item))
+                menu.addAction(delete_action)
+            
+            explorer_action = QAction(QIcon("icons/explorer.png"), "Apri in Explorer", self)
+            explorer_action.triggered.connect(lambda: self.open_in_explorer(item))
+            menu.addAction(explorer_action)
         else:
             self.file_tree.clearSelection()
             self.update_breadcrumbs(None)
