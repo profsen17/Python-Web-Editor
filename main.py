@@ -34,7 +34,7 @@ class HTMLEditor(QMainWindow):
         sidebar_layout = QVBoxLayout()
         
         self.search_bar = QLineEdit()
-        self.search_bar.setPlaceholderText("Cerca file (fuzzy search)...")
+        self.search_bar.setPlaceholderText("Cerca file...")
         self.search_bar.textChanged.connect(self.filter_files)
         self.search_bar.setVisible(False)
         sidebar_layout.addWidget(self.search_bar)
@@ -93,10 +93,13 @@ class HTMLEditor(QMainWindow):
                     background-color: #2b2b2b; 
                     color: #ffffff; 
                 }
+                QMenuBar {
+                    background-color: #3c3f41;
+                    border-radius: 5px; 
+                }
                 QToolBar { 
-                    background-color: #3c3f41; 
+                    background-color: #2b2b2b; 
                     border: none; 
-                    border-radius: 10px; 
                     padding: 5px; 
                 }
                 QPushButton { 
@@ -181,8 +184,12 @@ class HTMLEditor(QMainWindow):
                     background-color: #f0f0f0; 
                     color: #000000; 
                 }
+                QMenuBar {
+                    background-color: #e0e0e0;
+                    border-radius: 5px; 
+                }
                 QToolBar { 
-                    background-color: #e0e0e0; 
+                    background-color: #f0f0f0; 
                     border: none; 
                     padding: 5px; 
                 }
