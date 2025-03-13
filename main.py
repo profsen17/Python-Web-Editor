@@ -4,15 +4,18 @@ import shutil
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QTextEdit, QTreeWidget, 
                             QTreeWidgetItem, QSplitter, QWidget, QVBoxLayout, 
                             QAction, QMenu, QHBoxLayout, QFileDialog, QMessageBox,
-                            QToolBar, QPushButton, QLabel, QInputDialog)
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QIcon
+                            QToolBar, QPushButton, QLabel, QInputDialog, QLineEdit)
+from PyQt5.QtCore import Qt, QPropertyAnimation, QEasingCurve
+from PyQt5.QtGui import QIcon, QTextDocument, QColor
 
 class HTMLEditor(QMainWindow):
     def __init__(self):
         super().__init__()
         self.project_path = None
         self.current_file = None
+        self.file_histories = {}
+        self.expanded_state = {}
+        self.is_dark_mode = False
         self.initUI()
 
     def initUI(self):
@@ -29,14 +32,22 @@ class HTMLEditor(QMainWindow):
         sidebar_widget = QWidget()
         sidebar_layout = QVBoxLayout()
         
+        self.search_bar = QLineEdit()
+        self.search_bar.setPlaceholderText("Cerca file...")
+        self.search_bar.textChanged.connect(self.filter_files)
+        self.search_bar.setVisible(False)
+        sidebar_layout.addWidget(self.search_bar)
+        
         self.file_tree = QTreeWidget()
         self.file_tree.setHeaderLabel("Project Files")
-        self.file_tree.itemDoubleClicked.connect(self.open_file)
-        self.file_tree.itemClicked.connect(self.update_breadcrumbs)
+        self.file_tree.itemClicked.connect(self.handle_item_clicked)
         self.file_tree.setContextMenuPolicy(Qt.CustomContextMenu)
         self.file_tree.customContextMenuRequested.connect(self.show_context_menu)
         self.file_tree.setExpandsOnDoubleClick(False)
         self.file_tree.itemChanged.connect(self.rename_item)
+        self.file_tree.itemExpanded.connect(self.store_expanded_state)
+        self.file_tree.itemCollapsed.connect(self.store_expanded_state)
+        self.file_tree.viewport().installEventFilter(self)
         
         sidebar_layout.addWidget(self.file_tree)
         sidebar_widget.setLayout(sidebar_layout)
@@ -71,7 +82,174 @@ class HTMLEditor(QMainWindow):
         self.setCentralWidget(main_widget)
 
         self.createMenu()
+        self.apply_theme()
         self.show()
+
+    def apply_theme(self):
+        """Apply Light or Dark theme with fixes."""
+        if self.is_dark_mode:
+            # Dark Mode
+            self.setStyleSheet("""
+                QMainWindow {
+                    background-color: #2b2b2b;
+                    color: #ffffff;
+                }
+                QToolBar {
+                    background-color: #3c3f41;
+                    border: none;
+                    border-radius: 10px;
+                    padding: 5px;
+                }
+                QPushButton {
+                    background-color: #4a4a4a;
+                    color: #ffffff;
+                    border: none;
+                    border-radius: 8px;
+                    padding: 5px;
+                }
+                QPushButton:hover {
+                    background-color: #5a5a5a;
+                }
+                QTextEdit {
+                    background-color: #1e1e1e;
+                    color: #ffffff;
+                    border: 1px solid #555555;
+                    border-radius: 10px;
+                    padding: 5px;
+                }
+                QTreeWidget {
+                    background-color: #333333;
+                    color: #ffffff;
+                    border: 1px solid #555555;
+                    border-radius: 10px;
+                }
+                QTreeWidget::item:hover {
+                    background-color: #444444;
+                }
+                QTreeWidget::item:selected {
+                    background-color: #5a5a5a;
+                    color: #ffffff;
+                }
+                QTreeWidget::item:selected:hover {
+                    background-color: #666666;
+                    color: #ffffff;
+                }
+                QHeaderView::section {
+                    background-color: #3c3f41;
+                    color: #ffffff;
+                    border: none;
+                    padding: 5px;
+                }
+                QLineEdit {
+                    background-color: #3c3f41;
+                    color: #ffffff;
+                    border: 1px solid #555555;
+                    border-radius: 8px;
+                    padding: 5px;
+                }
+                QSplitter::handle {
+                    background-color: #555555;
+                    border-radius: 5px;
+                }
+                QMenu {
+                    background-color: #3c3f41;
+                    color: #ffffff;
+                    border: 1px solid #555555;
+                    border-radius: 5px;
+                }
+                QMenu::item:selected {
+                    background-color: #5a5a5a;
+                }
+            """)
+        else:
+            # Light Mode
+            self.setStyleSheet("""
+                QMainWindow {
+                    background-color: #f0f0f0;
+                    color: #000000;
+                }
+                QToolBar {
+                    background-color: #e0e0e0;
+                    border: none;
+                    border-radius: 10px;
+                    padding: 5px;
+                }
+                QPushButton {
+                    background-color: #d0d0d0;
+                    color: #000000;
+                    border: none;
+                    border-radius: 8px;
+                    padding: 5px;
+                }
+                QPushButton:hover {
+                    background-color: #c0c0c0;
+                }
+                QTextEdit {
+                    background-color: #ffffff;
+                    color: #000000;
+                    border: 1px solid #cccccc;
+                    border-radius: 10px;
+                    padding: 5px;
+                }
+                QTreeWidget {
+                    background-color: #ffffff;
+                    color: #000000;
+                    border: 1px solid #cccccc;
+                    border-radius: 10px;
+                }
+                QTreeWidget::item:hover {
+                    background-color: #f5f5f5;
+                }
+                QTreeWidget::item:selected {
+                    background-color: #d0d0d0;
+                    color: #000000;
+                }
+                QTreeWidget::item:selected:hover {
+                    background-color: #c0c0c0;
+                    color: #000000;
+                }
+                QHeaderView::section {
+                    background-color: #e0e0e0;
+                    color: #000000;
+                    border: none;
+                    padding: 5px;
+                }
+                QLineEdit {
+                    background-color: #e0e0e0;
+                    color: #000000;
+                    border: 1px solid #cccccc;
+                    border-radius: 8px;
+                    padding: 5px;
+                }
+                QSplitter::handle {
+                    background-color: #cccccc;
+                    border-radius: 5px;
+                }
+                QMenu {
+                    background-color: #e0e0e0;
+                    color: #000000;
+                    border: 1px solid #cccccc;
+                    border-radius: 5px;
+                }
+                QMenu::item:selected {
+                    background-color: #d0d0d0;
+                }
+            """)
+
+    def animate_button(self, button):
+        anim = QPropertyAnimation(button, b"geometry")
+        anim.setDuration(100)
+        anim.setStartValue(button.geometry())
+        anim.setEndValue(button.geometry().adjusted(-2, -2, 2, 2))
+        anim.setEasingCurve(QEasingCurve.InOutQuad)
+        anim.start(QPropertyAnimation.DeleteWhenStopped)
+
+    def eventFilter(self, obj, event):
+        if obj == self.file_tree.viewport() and event.type() == event.MouseButtonPress:
+            if not self.file_tree.itemAt(event.pos()):
+                self.file_tree.clearSelection()
+                self.update_breadcrumbs(None)
+        return super().eventFilter(obj, event)
 
     def createMenu(self):
         menubar = self.menuBar()
@@ -92,6 +270,19 @@ class HTMLEditor(QMainWindow):
         saveAct.triggered.connect(self.save_current_file)
         fileMenu.addAction(saveAct)
 
+        themeMenu = menubar.addMenu('Theme')
+        lightAct = QAction('Light Mode', self)
+        lightAct.triggered.connect(lambda: self.set_theme(False))
+        themeMenu.addAction(lightAct)
+        
+        darkAct = QAction('Dark Mode', self)
+        darkAct.triggered.connect(lambda: self.set_theme(True))
+        themeMenu.addAction(darkAct)
+
+    def set_theme(self, dark_mode):
+        self.is_dark_mode = dark_mode
+        self.apply_theme()
+
     def update_breadcrumbs(self, item):
         self.breadcrumb_bar.clear()
         if not self.project_path:
@@ -105,16 +296,92 @@ class HTMLEditor(QMainWindow):
             path_parts.insert(0, current_item)
             current_item = current_item.parent()
         
-        if not path_parts:
+        if not path_parts and self.project_path:
             path_parts = [self.file_tree.topLevelItem(0)]
         
         for i, part in enumerate(path_parts):
             btn = QPushButton(part.text(0))
             btn.setFlat(True)
             btn.clicked.connect(lambda checked, item=part: self.file_tree.setCurrentItem(item))
+            btn.clicked.connect(lambda: self.animate_button(btn))
             self.breadcrumb_bar.addWidget(btn)
             if i < len(path_parts) - 1:
                 self.breadcrumb_bar.addWidget(QLabel(">"))
+
+    def store_expanded_state(self, item):
+        item_path = item.data(0, Qt.UserRole)
+        if item_path:
+            self.expanded_state[item_path] = item.isExpanded()
+
+    def restore_expanded_state(self, item):
+        item_path = item.data(0, Qt.UserRole)
+        if item_path in self.expanded_state:
+            item.setExpanded(self.expanded_state[item_path])
+        for i in range(item.childCount()):
+            self.restore_expanded_state(item.child(i))
+
+    def filter_files(self, text):
+        if not self.project_path:
+            return
+
+        search_text = text.replace(" ", "").lower()
+        
+        if not search_text:
+            self.file_tree.clear()
+            self.load_project_structure(self.project_path)
+            self.restore_expanded_state(self.file_tree.topLevelItem(0))
+            return
+
+        if self.file_tree.topLevelItem(0):
+            self.store_expanded_state_recursive(self.file_tree.topLevelItem(0))
+
+        self.file_tree.clear()
+        root_item = QTreeWidgetItem(self.file_tree, [os.path.basename(self.project_path)])
+        root_item.setIcon(0, QIcon("icons/folder.png"))
+        root_item.setFlags(root_item.flags() & ~Qt.ItemIsEditable)
+        root_item.setData(0, Qt.UserRole, self.project_path)
+
+        for dirpath, _, filenames in os.walk(self.project_path):
+            for filename in filenames:
+                if filename.startswith('.'):
+                    continue
+                file_no_spaces = filename.replace(" ", "").lower()
+                if search_text in file_no_spaces:
+                    rel_path = os.path.relpath(os.path.join(dirpath, filename), self.project_path)
+                    path_parts = rel_path.split(os.sep)
+                    
+                    current_item = root_item
+                    for i, part in enumerate(path_parts):
+                        if i == len(path_parts) - 1:
+                            file_item = QTreeWidgetItem(current_item, [part])
+                            file_item.setFlags(file_item.flags() & ~Qt.ItemIsEditable)
+                            file_item.setData(0, Qt.UserRole, os.path.join(self.project_path, rel_path))
+                            self.update_file_icon(file_item)
+                        else:
+                            found = False
+                            for j in range(current_item.childCount()):
+                                if current_item.child(j).text(0) == part:
+                                    current_item = current_item.child(j)
+                                    found = True
+                                    break
+                            if not found:
+                                folder_item = QTreeWidgetItem(current_item, [part])
+                                folder_item.setIcon(0, QIcon("icons/folder.png"))
+                                folder_item.setFlags(folder_item.flags() & ~Qt.ItemIsEditable)
+                                folder_item.setData(0, Qt.UserRole, os.path.join(self.project_path, os.sep.join(path_parts[:i+1])))
+                                current_item = folder_item
+        
+        self.expand_all_items(root_item)
+
+    def store_expanded_state_recursive(self, item):
+        self.store_expanded_state(item)
+        for i in range(item.childCount()):
+            self.store_expanded_state_recursive(item.child(i))
+
+    def expand_all_items(self, item):
+        item.setExpanded(True)
+        for i in range(item.childCount()):
+            self.expand_all_items(item.child(i))
 
     def newProject(self):
         parent_folder = QFileDialog.getExistingDirectory(self, "Seleziona cartella progetto")
@@ -154,30 +421,39 @@ class HTMLEditor(QMainWindow):
             assets_folder_path = os.path.join(self.project_path, "Assets")
             os.makedirs(assets_folder_path, exist_ok=True)
 
+            self.file_histories.clear()
+            self.expanded_state.clear()
             self.file_tree.clear()
             self.load_project_structure(self.project_path)
+            self.search_bar.setVisible(True)
             self.update_breadcrumbs(self.file_tree.topLevelItem(0))
             self.statusBar().showMessage(f'Nuovo progetto creato in {self.project_path}', 2000)
 
         except Exception as e:
             QMessageBox.warning(self, "Errore", f"Errore durante la creazione del progetto: {str(e)}")
             self.project_path = None
+            self.search_bar.setVisible(False)
 
     def openProject(self):
         default_path = os.getcwd()
         folder = QFileDialog.getExistingDirectory(self, "Seleziona cartella progetto", default_path)
         if folder:
             self.project_path = folder
+            self.file_histories.clear()
+            self.expanded_state.clear()
             self.file_tree.clear()
             self.load_project_structure(self.project_path)
+            self.search_bar.setVisible(True)
             self.update_breadcrumbs(self.file_tree.topLevelItem(0))
             self.statusBar().showMessage(f'Progetto aperto: {self.project_path}', 2000)
+        else:
+            self.search_bar.setVisible(False)
 
     def load_project_structure(self, path, parent=None):
         if parent is None:
             root = QTreeWidgetItem(self.file_tree, [os.path.basename(path)])
             root.setIcon(0, QIcon("icons/folder.png"))
-            root.setFlags(root.flags() | Qt.ItemIsEditable)
+            root.setFlags(root.flags() & ~Qt.ItemIsEditable)
             root.setData(0, Qt.UserRole, path)
             parent = root
         
@@ -186,12 +462,12 @@ class HTMLEditor(QMainWindow):
             if os.path.isdir(item_path):
                 folder_item = QTreeWidgetItem(parent, [item])
                 folder_item.setIcon(0, QIcon("icons/folder.png"))
-                folder_item.setFlags(folder_item.flags() | Qt.ItemIsEditable)
+                folder_item.setFlags(folder_item.flags() & ~Qt.ItemIsEditable)
                 folder_item.setData(0, Qt.UserRole, item_path)
                 self.load_project_structure(item_path, folder_item)
             elif not item.startswith('.'):
                 file_item = QTreeWidgetItem(parent, [item])
-                file_item.setFlags(file_item.flags() | Qt.ItemIsEditable)
+                file_item.setFlags(file_item.flags() & ~Qt.ItemIsEditable)
                 file_item.setData(0, Qt.UserRole, item_path)
                 self.update_file_icon(file_item)
 
@@ -211,30 +487,40 @@ class HTMLEditor(QMainWindow):
 
     def show_context_menu(self, position):
         item = self.file_tree.itemAt(position)
-        if not item:
-            return
-            
         menu = QMenu()
-        if self.is_folder(item):
-            add_file = menu.addAction("Aggiungi File")
-            add_folder = menu.addAction("Aggiungi Cartella")
-            rename_act = menu.addAction("Rinomina")
-            delete_act = menu.addAction("Elimina")
+        
+        if item:
+            if self.is_folder(item):
+                menu.addAction("Aggiungi File", lambda: self.addFile(item))
+                menu.addAction("Aggiungi Cartella", lambda: self.addFolder(item))
+                menu.addAction("Rinomina", lambda: self.start_rename(item))
+                menu.addAction("Elimina", lambda: self.delete_item(item))
+            else:
+                menu.addAction("Rinomina", lambda: self.start_rename(item))
+                menu.addAction("Elimina", lambda: self.delete_item(item))
+            menu.addAction("Apri in Explorer", lambda: self.open_in_explorer(item))
         else:
-            rename_act = menu.addAction("Rinomina")
-            delete_act = menu.addAction("Elimina")
+            self.file_tree.clearSelection()
+            self.update_breadcrumbs(None)
         
-        action = menu.exec_(self.file_tree.viewport().mapToGlobal(position))
-        
-        if action:
-            if action.text() == "Aggiungi File":
-                self.addFile(item)
-            elif action.text() == "Aggiungi Cartella":
-                self.addFolder(item)
-            elif action.text() == "Rinomina":
-                self.file_tree.editItem(item, 0)
-            elif action.text() == "Elimina":
-                self.delete_item(item)
+        if not menu.isEmpty():
+            menu.exec_(self.file_tree.viewport().mapToGlobal(position))
+
+    def start_rename(self, item):
+        item.setFlags(item.flags() | Qt.ItemIsEditable)
+        self.file_tree.editItem(item, 0)
+
+    def open_in_explorer(self, item):
+        item_path = item.data(0, Qt.UserRole)
+        if item_path:
+            if os.path.isfile(item_path):
+                dir_path = os.path.dirname(item_path)
+            else:
+                dir_path = item_path
+            try:
+                os.startfile(dir_path)
+            except Exception as e:
+                QMessageBox.warning(self, "Errore", f"Impossibile aprire Explorer: {str(e)}")
 
     def is_folder(self, item):
         item_path = item.data(0, Qt.UserRole)
@@ -257,22 +543,21 @@ class HTMLEditor(QMainWindow):
             
         parent_path = parent_item.data(0, Qt.UserRole)
         
-        # Step 1: Create the sample file in the filesystem
         default_name = "new_file.html"
         file_path = os.path.join(parent_path, default_name)
         with open(file_path, "w") as f:
             f.write("")
         
-        # Step 2: Add it to the tree
         new_file = QTreeWidgetItem(parent_item, [default_name])
-        new_file.setFlags(new_file.flags() | Qt.ItemIsEditable)
+        new_file.setFlags(new_file.flags() & ~Qt.ItemIsEditable)
         new_file.setData(0, Qt.UserRole, file_path)
         self.update_file_icon(new_file)
         
-        # Step 3: Expand parent and allow renaming
         self.update_breadcrumbs(new_file)
         parent_item.setExpanded(True)
+        self.store_expanded_state(parent_item)
         self.file_tree.setCurrentItem(new_file)
+        new_file.setFlags(new_file.flags() | Qt.ItemIsEditable)
         self.file_tree.editItem(new_file, 0)
 
     def addFolder(self, parent_item=None):
@@ -288,7 +573,7 @@ class HTMLEditor(QMainWindow):
         parent_path = parent_item.data(0, Qt.UserRole)
         
         new_folder = QTreeWidgetItem(parent_item, ["New Folder"])
-        new_folder.setFlags(new_folder.flags() | Qt.ItemIsEditable)
+        new_folder.setFlags(new_folder.flags() & ~Qt.ItemIsEditable)
         folder_path = os.path.join(parent_path, "New Folder")
         new_folder.setData(0, Qt.UserRole, folder_path)
         self.update_file_icon(new_folder)
@@ -296,8 +581,10 @@ class HTMLEditor(QMainWindow):
         os.makedirs(folder_path, exist_ok=True)
         self.update_breadcrumbs(new_folder)
         parent_item.setExpanded(True)
+        self.store_expanded_state(parent_item)
         
         self.file_tree.setCurrentItem(new_folder)
+        new_folder.setFlags(new_folder.flags() | Qt.ItemIsEditable)
         self.file_tree.editItem(new_folder, 0)
         self.file_tree.itemChanged.connect(lambda item, column: self.update_file_icon(item) if item == new_folder else None)
 
@@ -321,6 +608,8 @@ class HTMLEditor(QMainWindow):
         try:
             if os.path.isfile(item_path):
                 os.remove(item_path)
+                if item_path in self.file_histories:
+                    del self.file_histories[item_path]
             elif os.path.isdir(item_path):
                 shutil.rmtree(item_path)
             parent = item.parent()
@@ -329,24 +618,36 @@ class HTMLEditor(QMainWindow):
             else:
                 self.file_tree.takeTopLevelItem(self.file_tree.indexOfTopLevelItem(item))
                 self.project_path = None
+                self.search_bar.setVisible(False)
             self.statusBar().showMessage(f"Eliminato: {item_path}", 2000)
         except Exception as e:
             QMessageBox.warning(self, "Errore", f"Impossibile eliminare: {str(e)}")
 
-    def open_file(self, item, column):
+    def handle_item_clicked(self, item, column):
         file_path = item.data(0, Qt.UserRole)
         if file_path and os.path.isfile(file_path):
             self.current_file = file_path
-            with open(file_path, "r") as f:
-                self.code_view.setText(f.read())
-            self.update_breadcrumbs(item)
+            if file_path not in self.file_histories:
+                self.file_histories[file_path] = QTextDocument()
+                try:
+                    with open(file_path, "r", encoding="utf-8") as f:
+                        self.file_histories[file_path].setPlainText(f.read())
+                except Exception as e:
+                    QMessageBox.warning(self, "Errore", f"Impossibile aprire il file: {str(e)}")
+                    return
+            self.code_view.setDocument(self.file_histories[file_path])
             self.statusBar().showMessage(f'Aperto: {file_path}', 2000)
+        self.update_breadcrumbs(item)
 
     def save_current_file(self):
         if self.current_file and os.path.isfile(self.current_file):
-            with open(self.current_file, "w") as f:
-                f.write(self.code_view.toPlainText())
-            self.statusBar().showMessage(f'Salvato: {self.current_file}', 1000)
+            content = self.file_histories[self.current_file].toPlainText()
+            try:
+                with open(self.current_file, "w", encoding="utf-8") as f:
+                    f.write(content)
+                self.statusBar().showMessage(f'Salvato: {self.current_file}', 1000)
+            except Exception as e:
+                QMessageBox.warning(self, "Errore", f"Impossibile salvare il file: {str(e)}")
 
     def rename_item(self, item, column):
         if not self.project_path:
@@ -365,8 +666,11 @@ class HTMLEditor(QMainWindow):
             self.update_file_icon(item)
             if old_path == self.project_path:
                 self.project_path = new_path
-            if self.current_file == old_path:
-                self.current_file = new_path
+            if old_path in self.file_histories:
+                self.file_histories[new_path] = self.file_histories.pop(old_path)
+                if self.current_file == old_path:
+                    self.current_file = new_path
+                    self.code_view.setDocument(self.file_histories[new_path])
             self.update_breadcrumbs(item)
             self.statusBar().showMessage(f"Rinominato: {old_path} -> {new_path}", 2000)
         except PermissionError:
@@ -375,6 +679,11 @@ class HTMLEditor(QMainWindow):
         except OSError as e:
             QMessageBox.warning(self, "Errore", f"Errore durante la rinomina: {str(e)}")
             item.setText(column, os.path.basename(old_path))
+        finally:
+            item.setFlags(item.flags() & ~Qt.ItemIsEditable)
+
+    def closeEvent(self, event):
+        super().closeEvent(event)
 
 def main():
     app = QApplication(sys.argv)
