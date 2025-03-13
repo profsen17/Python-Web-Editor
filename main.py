@@ -133,6 +133,10 @@ class HTMLEditor(QMainWindow):
                     background-color: #666666; 
                     color: #ffffff; 
                 }
+                QHeaderView {
+                    background-color: #000000;
+                    border-radius: 10px;
+                }
                 QHeaderView::section { 
                     background-color: #3c3f41; 
                     color: #ffffff; 
@@ -180,7 +184,6 @@ class HTMLEditor(QMainWindow):
                 QToolBar { 
                     background-color: #e0e0e0; 
                     border: none; 
-                    border-radius: 10px; 
                     padding: 5px; 
                 }
                 QPushButton { 
@@ -217,6 +220,10 @@ class HTMLEditor(QMainWindow):
                     background-color: #c0c0c0; 
                     color: #000000; 
                 }
+                QHeaderView {
+                    background-color: #e0e0e0;
+                    border-radius: 10px;
+                }
                 QHeaderView::section { 
                     background-color: #e0e0e0; 
                     color: #000000; 
@@ -229,7 +236,7 @@ class HTMLEditor(QMainWindow):
                     background-color: #e0e0e0; 
                     color: #000000; 
                     border: 1px solid #cccccc; 
-                    border-radius: 8px; 
+                    border-radius: 5px; 
                     padding: 5px; 
                     min-height: 11px; 
                 }
@@ -513,11 +520,11 @@ class HTMLEditor(QMainWindow):
         
         if item:
             if self.is_folder(item):
-                add_file_action = QAction(QIcon("icons/file-add.png"), "Aggiungi File", self)
+                add_file_action = QAction(QIcon("icons/add_file.png"), "Aggiungi File", self)
                 add_file_action.triggered.connect(lambda: self.addFile(item))
                 menu.addAction(add_file_action)
                 
-                add_folder_action = QAction(QIcon("icons/folder-add.png"), "Aggiungi Cartella", self)
+                add_folder_action = QAction(QIcon("icons/folder.png"), "Aggiungi Cartella", self)
                 add_folder_action.triggered.connect(lambda: self.addFolder(item))
                 menu.addAction(add_folder_action)
                 
@@ -525,7 +532,7 @@ class HTMLEditor(QMainWindow):
                 rename_action.triggered.connect(lambda: self.start_rename(item))
                 menu.addAction(rename_action)
                 
-                delete_action = QAction(QIcon("icons/delete.png"), "Elimina", self)
+                delete_action = QAction(QIcon("icons/delete_foler.png"), "Elimina", self)
                 delete_action.triggered.connect(lambda: self.delete_item(item))
                 menu.addAction(delete_action)
             else:
@@ -533,7 +540,7 @@ class HTMLEditor(QMainWindow):
                 rename_action.triggered.connect(lambda: self.start_rename(item))
                 menu.addAction(rename_action)
                 
-                delete_action = QAction(QIcon("icons/delete.png"), "Elimina", self)
+                delete_action = QAction(QIcon("icons/delete_file.png"), "Elimina", self)
                 delete_action.triggered.connect(lambda: self.delete_item(item))
                 menu.addAction(delete_action)
             
