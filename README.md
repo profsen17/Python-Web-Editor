@@ -58,3 +58,10 @@ To get started with this project, follow the steps below to install the editor a
    ```bash
    git clone https://github.com/yourusername/python-web-code-editor.git
    cd python-web-code-editor
+
+2. **Libraries to install**:
+    ```bash
+   pip install PyQt5
+   pip install fuzzywuzzy
+   pip install python-Levenshtein
+   
