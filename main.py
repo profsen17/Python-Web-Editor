@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QTextEdit, QTreeWidget,
                             QToolBar, QPushButton, QLabel, QInputDialog, QLineEdit)
 from PyQt5.QtCore import Qt, QPropertyAnimation, QEasingCurve
 from PyQt5.QtGui import QIcon, QTextDocument, QColor
+from fuzzywuzzy import fuzz  # Import fuzzywuzzy for fuzzy matching
 
 class HTMLEditor(QMainWindow):
     def __init__(self):
@@ -86,154 +87,39 @@ class HTMLEditor(QMainWindow):
         self.show()
 
     def apply_theme(self):
-        """Apply Light or Dark theme with fixes."""
         if self.is_dark_mode:
-            # Dark Mode
             self.setStyleSheet("""
-                QMainWindow {
-                    background-color: #2b2b2b;
-                    color: #ffffff;
-                }
-                QToolBar {
-                    background-color: #3c3f41;
-                    border: none;
-                    border-radius: 10px;
-                    padding: 5px;
-                }
-                QPushButton {
-                    background-color: #4a4a4a;
-                    color: #ffffff;
-                    border: none;
-                    border-radius: 8px;
-                    padding: 5px;
-                }
-                QPushButton:hover {
-                    background-color: #5a5a5a;
-                }
-                QTextEdit {
-                    background-color: #1e1e1e;
-                    color: #ffffff;
-                    border: 1px solid #555555;
-                    border-radius: 10px;
-                    padding: 5px;
-                }
-                QTreeWidget {
-                    background-color: #333333;
-                    color: #ffffff;
-                    border: 1px solid #555555;
-                    border-radius: 10px;
-                }
-                QTreeWidget::item:hover {
-                    background-color: #444444;
-                }
-                QTreeWidget::item:selected {
-                    background-color: #5a5a5a;
-                    color: #ffffff;
-                }
-                QTreeWidget::item:selected:hover {
-                    background-color: #666666;
-                    color: #ffffff;
-                }
-                QHeaderView::section {
-                    background-color: #3c3f41;
-                    color: #ffffff;
-                    border: none;
-                    padding: 5px;
-                }
-                QLineEdit {
-                    background-color: #3c3f41;
-                    color: #ffffff;
-                    border: 1px solid #555555;
-                    border-radius: 8px;
-                    padding: 5px;
-                }
-                QSplitter::handle {
-                    background-color: #555555;
-                    border-radius: 5px;
-                }
-                QMenu {
-                    background-color: #3c3f41;
-                    color: #ffffff;
-                    border: 1px solid #555555;
-                    border-radius: 5px;
-                }
-                QMenu::item:selected {
-                    background-color: #5a5a5a;
-                }
+                QMainWindow { background-color: #2b2b2b; color: #ffffff; }
+                QToolBar { background-color: #3c3f41; border: none; border-radius: 10px; padding: 5px; }
+                QPushButton { background-color: #4a4a4a; color: #ffffff; border: none; border-radius: 8px; padding: 5px; }
+                QPushButton:hover { background-color: #5a5a5a; }
+                QTextEdit { background-color: #1e1e1e; color: #ffffff; border: 1px solid #555555; border-radius: 10px; padding: 5px; }
+                QTreeWidget { background-color: #333333; color: #ffffff; border: 1px solid #555555; border-radius: 10px; }
+                QTreeWidget::item:hover { background-color: #444444; }
+                QTreeWidget::item:selected { background-color: #5a5a5a; color: #ffffff; }
+                QTreeWidget::item:selected:hover { background-color: #666666; color: #ffffff; }
+                QHeaderView::section { background-color: #3c3f41; color: #ffffff; border: none; padding: 5px; }
+                QLineEdit { background-color: #3c3f41; color: #ffffff; border: 1px solid #555555; border-radius: 8px; padding: 5px; }
+                QSplitter::handle { background-color: #555555; border-radius: 5px; }
+                QMenu { background-color: #3c3f41; color: #ffffff; border: 1px solid #555555; border-radius: 5px; }
+                QMenu::item:selected { background-color: #5a5a5a; }
             """)
         else:
-            # Light Mode
             self.setStyleSheet("""
-                QMainWindow {
-                    background-color: #f0f0f0;
-                    color: #000000;
-                }
-                QToolBar {
-                    background-color: #e0e0e0;
-                    border: none;
-                    border-radius: 10px;
-                    padding: 5px;
-                }
-                QPushButton {
-                    background-color: #d0d0d0;
-                    color: #000000;
-                    border: none;
-                    border-radius: 8px;
-                    padding: 5px;
-                }
-                QPushButton:hover {
-                    background-color: #c0c0c0;
-                }
-                QTextEdit {
-                    background-color: #ffffff;
-                    color: #000000;
-                    border: 1px solid #cccccc;
-                    border-radius: 10px;
-                    padding: 5px;
-                }
-                QTreeWidget {
-                    background-color: #ffffff;
-                    color: #000000;
-                    border: 1px solid #cccccc;
-                    border-radius: 10px;
-                }
-                QTreeWidget::item:hover {
-                    background-color: #f5f5f5;
-                }
-                QTreeWidget::item:selected {
-                    background-color: #d0d0d0;
-                    color: #000000;
-                }
-                QTreeWidget::item:selected:hover {
-                    background-color: #c0c0c0;
-                    color: #000000;
-                }
-                QHeaderView::section {
-                    background-color: #e0e0e0;
-                    color: #000000;
-                    border: none;
-                    padding: 5px;
-                }
-                QLineEdit {
-                    background-color: #e0e0e0;
-                    color: #000000;
-                    border: 1px solid #cccccc;
-                    border-radius: 8px;
-                    padding: 5px;
-                }
-                QSplitter::handle {
-                    background-color: #cccccc;
-                    border-radius: 5px;
-                }
-                QMenu {
-                    background-color: #e0e0e0;
-                    color: #000000;
-                    border: 1px solid #cccccc;
-                    border-radius: 5px;
-                }
-                QMenu::item:selected {
-                    background-color: #d0d0d0;
-                }
+                QMainWindow { background-color: #f0f0f0; color: #000000; }
+                QToolBar { background-color: #e0e0e0; border: none; border-radius: 10px; padding: 5px; }
+                QPushButton { background-color: #d0d0d0; color: #000000; border: none; border-radius: 8px; padding: 5px; }
+                QPushButton:hover { background-color: #c0c0c0; }
+                QTextEdit { background-color: #ffffff; color: #000000; border: 1px solid #cccccc; border-radius: 10px; padding: 5px; }
+                QTreeWidget { background-color: #ffffff; color: #000000; border: 1px solid #cccccc; border-radius: 10px; }
+                QTreeWidget::item:hover { background-color: #f5f5f5; }
+                QTreeWidget::item:selected { background-color: #d0d0d0; color: #000000; }
+                QTreeWidget::item:selected:hover { background-color: #c0c0c0; color: #000000; }
+                QHeaderView::section { background-color: #e0e0e0; color: #000000; border: none; padding: 5px; }
+                QLineEdit { background-color: #e0e0e0; color: #000000; border: 1px solid #cccccc; border-radius: 8px; padding: 5px; }
+                QSplitter::handle { background-color: #cccccc; border-radius: 5px; }
+                QMenu { background-color: #e0e0e0; color: #000000; border: 1px solid #cccccc; border-radius: 5px; }
+                QMenu::item:selected { background-color: #d0d0d0; }
             """)
 
     def animate_button(self, button):
@@ -321,6 +207,7 @@ class HTMLEditor(QMainWindow):
             self.restore_expanded_state(item.child(i))
 
     def filter_files(self, text):
+        """Fuzzy search implementation."""
         if not self.project_path:
             return
 
@@ -346,7 +233,9 @@ class HTMLEditor(QMainWindow):
                 if filename.startswith('.'):
                     continue
                 file_no_spaces = filename.replace(" ", "").lower()
-                if search_text in file_no_spaces:
+                # Use fuzzy matching with a threshold
+                match_score = fuzz.partial_ratio(search_text, file_no_spaces)
+                if match_score >= 70:  # Threshold: 70% similarity
                     rel_path = os.path.relpath(os.path.join(dirpath, filename), self.project_path)
                     path_parts = rel_path.split(os.sep)
                     
