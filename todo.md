@@ -12,7 +12,7 @@
 - [ ] **Ottimizzazioni del File System**
   - [ ] Implementare un sistema di caching per velocizzare il caricamento di progetti grandi
   - [ ] Aggiungere supporto per file nascosti opzionale (es. toggle per mostrare `.git`)
-  - [ ] Aggiungere un controllo per evitare nomi di file/cartelle duplicati
+  - [x] Aggiungere un controllo per evitare nomi di file/cartelle duplicati
 
 ## Generale
 - [x] **Creazione delle Icone (Parziale)**
