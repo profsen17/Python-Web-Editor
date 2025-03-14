@@ -96,11 +96,16 @@ class HTMLEditor(QMainWindow):
                 QMenuBar {
                     background-color: #3c3f41;
                     border-radius: 5px; 
+                    color: #ffffff;
+                }
+                QLabel {
+                    color: #ffffff;               
                 }
                 QToolBar { 
                     background-color: #2b2b2b; 
                     border: none; 
                     padding: 5px; 
+                    color: #ffffff;
                 }
                 QPushButton { 
                     background-color: #4a4a4a; 
@@ -187,6 +192,9 @@ class HTMLEditor(QMainWindow):
                 QMenuBar {
                     background-color: #e0e0e0;
                     border-radius: 5px; 
+                }
+                QLabel {
+                    color: #000000;               
                 }
                 QToolBar { 
                     background-color: #f0f0f0; 
