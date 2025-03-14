@@ -441,7 +441,7 @@ class HTMLEditor(QMainWindow):
         try:
             os.makedirs(self.project_path, exist_ok=True)
 
-            script_folder_path = os.path.join(self.project_path, "Script")
+            script_folder_path = os.path.join(self.project_path, "Scripts")
             os.makedirs(script_folder_path, exist_ok=True)
 
             css_folder_path = os.path.join(script_folder_path, "css")
