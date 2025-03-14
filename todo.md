@@ -15,9 +15,14 @@
 - [ ] Implementare il Ridimensionamento degli Elementi
 - [ ] Implementare il Movimento sulla Griglia degli Elementi
 - [ ] Implementare gli Strumenti di Allineamento
+- [ ] Implementare il Menu delle Proprietà degli Elementi
 
 ## Code Workspace
 - [ ] Implementazione Code Workspace
+- [ ] Implementazione Indicizazzione delle Righe di Codice
+- [ ] Implementazione dell'Auto Indent
+- [ ] Implementazione degli Highlights del Codice (Keywork colorate)
+- [ ] Implementazione Auto Completamento del Codice
 
 ## Relazione Design-Code Workspace
 - [ ] Implementazione Modifiche in Tempo Reale da Design a Codice
