@@ -1,18 +1,24 @@
 # 📌 To-Do List
 
-## 🔴 High Priority (Urgent)
-!!Quando apri Grok edita ultima richiesta!! (Ignora spalm è per me)
-- [ ] Aggiusta tutte le incongruenze tra dark e light
-- [ ] Aggiusta tutte le incongruenze tra i border radius
-- [ ] Task 3
+## File System
+- [x] Correzione Bug del File System
+- [x] Test del File System
 
-## 🟠 Medium Priority (Important)
-- [ ] Task 4
-- [ ] Task 5
-- [ ] Task 6
+## Generale
+- [x] Creazione delle Icone (Parziale)
+- [x] Implementazione Stile (Parziale)
 
-## 🟢 Low Priority (Optional)
-- [ ] Task 7
-- [ ] Task 8
-- [ ] Task 9
+## Design Workspace
+- [ ] Implementazione Design Workspace
+- [ ] Aggiungere Sezione Elementi dell'HTML
+- [ ] Implementare il Drag and Drop degli Elementi
+- [ ] Implementare il Ridimensionamento degli Elementi
+- [ ] Implementare il Movimento sulla Griglia degli Elementi
+- [ ] Implementare gli Strumenti di Allineamento
 
+## Code Workspace
+- [ ] Implementazione Code Workspace
+
+## Relazione Design-Code Workspace
+- [ ] Implementazione Modifiche in Tempo Reale da Design a Codice
+- [ ] Implementazione Modifiche in Tempo Reale da Codice a Design
