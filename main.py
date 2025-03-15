@@ -4,10 +4,140 @@ import shutil
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QTextEdit, QTreeWidget, 
                             QTreeWidgetItem, QSplitter, QWidget, QVBoxLayout, 
                             QAction, QMenu, QHBoxLayout, QFileDialog, QMessageBox,
-                            QToolBar, QPushButton, QLabel, QInputDialog, QLineEdit)
-from PyQt5.QtCore import Qt, QPropertyAnimation, QEasingCurve
-from PyQt5.QtGui import QIcon, QTextDocument, QColor
-from fuzzywuzzy import fuzz  # Import fuzzywuzzy for fuzzy matching
+                            QToolBar, QPushButton, QLabel, QInputDialog, QLineEdit,
+                            QTabWidget, QGridLayout, QScrollArea, QDialog, QComboBox, QFormLayout)
+from PyQt5.QtCore import Qt, QPropertyAnimation, QEasingCurve, QMimeData, QPoint, QSize
+from PyQt5.QtGui import QIcon, QTextDocument, QColor, QDrag, QPainter, QPen, QBrush
+from fuzzywuzzy import fuzz
+
+class GridWidget(QWidget):
+    def __init__(self, editor, parent=None):
+        super().__init__(parent)
+        self.editor = editor  # Reference to HTMLEditor instance
+        self.grid_size = 20
+        self.items = []
+        self.drag_preview = None
+        self.setAcceptDrops(True)
+        self.setMinimumHeight(300)
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        pen = QPen(QColor(200, 200, 200, 50) if self.editor.is_dark_mode else QColor(0, 0, 0, 50), 1, Qt.DotLine)
+        painter.setPen(pen)
+
+        for x in range(0, self.width(), self.grid_size):
+            painter.drawLine(x, 0, x, self.height())
+        for y in range(0, self.height(), self.grid_size):
+            painter.drawLine(0, y, self.width(), y)
+
+        if self.drag_preview:
+            painter.setBrush(QBrush(QColor(100, 100, 255, 100)))
+            painter.setPen(Qt.NoPen)
+            pos, size = self.drag_preview
+            painter.drawRect(pos.x(), pos.y(), size.width(), size.height())
+
+    def dragEnterEvent(self, event):
+        if event.mimeData().hasFormat("application/x-button"):
+            event.acceptProposedAction()
+
+    def dragMoveEvent(self, event):
+        if event.mimeData().hasFormat("application/x-button"):
+            pos = event.pos()
+            snapped_pos = self.snap_to_grid(pos)
+            self.drag_preview = (snapped_pos, QSize(100, 40))
+            self.update()
+            event.acceptProposedAction()
+
+    def dragLeaveEvent(self, event):
+        self.drag_preview = None
+        self.update()
+
+    def dropEvent(self, event):
+        if event.mimeData().hasFormat("application/x-button"):
+            pos = event.pos()
+            snapped_pos = self.snap_to_grid(pos)
+            button = QPushButton("Button", self)
+            button.setFixedSize(100, 40)
+            button.move(snapped_pos)
+            button.show()
+            self.items.append((button, snapped_pos))
+            self.drag_preview = None
+            self.update()
+            event.acceptProposedAction()
+
+    def snap_to_grid(self, pos):
+        x = round(pos.x() / self.grid_size) * self.grid_size
+        y = round(pos.y() / self.grid_size) * self.grid_size
+
+        mid_x = self.width() // 2
+        if abs(x + 50 - mid_x) < self.grid_size * 2:
+            x = mid_x - 50
+
+        mid_y = self.height() // 2
+        if abs(y + 20 - mid_y) < self.grid_size * 2:
+            y = mid_y - 20
+
+        x = max(0, min(x, self.width() - 100))
+        y = max(0, min(y, self.height() - 40))
+        
+        return QPoint(x, y)
+
+class DraggableButton(QPushButton):
+    def __init__(self, text, parent=None):
+        super().__init__(text, parent)
+        self.setFixedSize(100, 40)
+        self.setMaximumWidth(120)
+
+    def mouseMoveEvent(self, event):
+        if event.buttons() & Qt.LeftButton:
+            drag = QDrag(self)
+            mime_data = QMimeData()
+            mime_data.setData("application/x-button", b"button")
+            drag.setMimeData(mime_data)
+            drag.exec_(Qt.CopyAction)
+
+class FileSelectionDialog(QDialog):
+    def __init__(self, project_path, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Select Main Files")
+        self.project_path = project_path
+        self.layout = QFormLayout()
+
+        self.html_files = self.find_files(".html")
+        self.css_files = self.find_files(".css")
+        self.js_files = self.find_files(".js")
+
+        self.html_combo = QComboBox()
+        self.html_combo.addItems(self.html_files if self.html_files else ["None"])
+        self.layout.addRow("Main HTML File:", self.html_combo)
+
+        self.css_combo = QComboBox()
+        self.css_combo.addItems(self.css_files if self.css_files else ["None"])
+        self.layout.addRow("Main CSS File:", self.css_combo)
+
+        self.js_combo = QComboBox()
+        self.js_combo.addItems(self.js_files if self.js_files else ["None"])
+        self.layout.addRow("Main JS File:", self.js_combo)
+
+        self.ok_button = QPushButton("OK")
+        self.ok_button.clicked.connect(self.accept)
+        self.layout.addWidget(self.ok_button)
+
+        self.setLayout(self.layout)
+
+    def find_files(self, extension):
+        files = []
+        for root, _, filenames in os.walk(self.project_path):
+            for filename in filenames:
+                if filename.endswith(extension) and not filename.startswith('.'):
+                    files.append(os.path.relpath(os.path.join(root, filename), self.project_path))
+        return files
+
+    def get_selected_files(self):
+        html_file = self.html_combo.currentText() if self.html_combo.currentText() != "None" else None
+        css_file = self.css_combo.currentText() if self.css_combo.currentText() != "None" else None
+        js_file = self.js_combo.currentText() if self.js_combo.currentText() != "None" else None
+        return html_file, css_file, js_file
 
 class HTMLEditor(QMainWindow):
     def __init__(self):
@@ -17,6 +147,9 @@ class HTMLEditor(QMainWindow):
         self.file_histories = {}
         self.expanded_state = {}
         self.is_dark_mode = False
+        self.main_html_file = None
+        self.main_css_file = None
+        self.main_js_file = None
         self.initUI()
 
     def initUI(self):
@@ -33,11 +166,16 @@ class HTMLEditor(QMainWindow):
         sidebar_widget = QWidget()
         sidebar_layout = QVBoxLayout()
         
+        self.tab_widget = QTabWidget()
+        self.tab_widget.setVisible(False)
+        
+        project_files_widget = QWidget()
+        project_files_layout = QVBoxLayout()
+        
         self.search_bar = QLineEdit()
         self.search_bar.setPlaceholderText("Cerca file...")
         self.search_bar.textChanged.connect(self.filter_files)
-        self.search_bar.setVisible(False)
-        sidebar_layout.addWidget(self.search_bar)
+        project_files_layout.addWidget(self.search_bar)
         
         self.file_tree = QTreeWidget()
         self.file_tree.setHeaderLabel("Project Files")
@@ -49,8 +187,42 @@ class HTMLEditor(QMainWindow):
         self.file_tree.itemExpanded.connect(self.store_expanded_state)
         self.file_tree.itemCollapsed.connect(self.store_expanded_state)
         self.file_tree.viewport().installEventFilter(self)
+        project_files_layout.addWidget(self.file_tree)
         
-        sidebar_layout.addWidget(self.file_tree)
+        project_files_widget.setLayout(project_files_layout)
+        self.tab_widget.addTab(project_files_widget, "Project Files")
+        
+        components_widget = QWidget()
+        components_layout = QVBoxLayout()
+        
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_content = QWidget()
+        
+        components_grid = QGridLayout()
+        components_grid.setSpacing(10)
+        components_grid.setAlignment(Qt.AlignHCenter)
+        
+        btn1 = DraggableButton("Button")
+        components_grid.addWidget(btn1, 0, 0)
+        
+        btn2 = DraggableButton("Div")
+        components_grid.addWidget(btn2, 0, 1)
+        
+        btn3 = DraggableButton("Image")
+        components_grid.addWidget(btn3, 1, 0)
+        
+        btn4 = DraggableButton("Text")
+        components_grid.addWidget(btn4, 1, 1)
+        
+        scroll_content.setLayout(components_grid)
+        scroll_area.setWidget(scroll_content)
+        components_layout.addWidget(scroll_area)
+        
+        components_widget.setLayout(components_layout)
+        self.tab_widget.addTab(components_widget, "Components")
+        
+        sidebar_layout.addWidget(self.tab_widget)
         sidebar_widget.setLayout(sidebar_layout)
         sidebar_widget.setMinimumWidth(200)
 
@@ -59,15 +231,12 @@ class HTMLEditor(QMainWindow):
         
         content_splitter = QSplitter(Qt.Vertical)
         
-        self.design_view = QTextEdit()
-        self.design_view.setPlaceholderText("Design View (da implementare)")
-        self.design_view.setMinimumHeight(300)
+        self.design_view = GridWidget(self)  # Pass self (HTMLEditor) to GridWidget
+        content_splitter.addWidget(self.design_view)
         
         self.code_view = QTextEdit()
         self.code_view.setPlaceholderText("Code View")
         self.code_view.textChanged.connect(self.save_current_file)
-        
-        content_splitter.addWidget(self.design_view)
         content_splitter.addWidget(self.code_view)
         
         right_layout.addWidget(content_splitter)
@@ -89,194 +258,290 @@ class HTMLEditor(QMainWindow):
     def apply_theme(self):
         if self.is_dark_mode:
             self.setStyleSheet("""
-                QMainWindow { 
-                    background-color: #2b2b2b; 
-                    color: #ffffff; 
-                }
-                QMenuBar {
-                    background-color: #3c3f41;
-                    border-radius: 5px; 
-                    color: #ffffff;
-                }
-                QLabel {
-                    color: #ffffff;               
-                }
-                QToolBar { 
-                    background-color: #2b2b2b; 
-                    border: none; 
-                    padding: 5px; 
-                    color: #ffffff;
-                }
-                QPushButton { 
-                    background-color: #4a4a4a; 
-                    color: #ffffff; 
-                    border: none; 
-                    border-radius: 8px; 
-                    padding: 5px; 
-                }
-                QPushButton:hover { 
-                    background-color: #5a5a5a; 
-                }
-                QTextEdit { 
-                    background-color: #1e1e1e; 
-                    color: #ffffff; 
-                    border: 1px solid #555555; 
-                    border-radius: 10px; 
-                    padding: 5px; 
-                }
-                QTreeWidget { 
-                    background-color: #333333; 
-                    color: #ffffff; 
-                    border: 1px solid #555555; 
-                    border-radius: 10px; 
-                }
-                QTreeWidget::item:hover { 
-                    background-color: #444444; 
-                }
-                QTreeWidget::item:selected { 
-                    background-color: #5a5a5a; 
-                    color: #ffffff; 
-                }
-                QTreeWidget::item:selected:hover { 
-                    background-color: #666666; 
-                    color: #ffffff; 
-                }
-                QHeaderView {
-                    background-color: #000000;
-                    border-radius: 10px;
-                }
-                QHeaderView::section { 
-                    background-color: #3c3f41; 
-                    color: #ffffff; 
-                    border: none; 
-                    padding: 5px; 
-                    border-top-left-radius: 10px; 
-                    border-top-right-radius: 10px; 
-                }
-                QLineEdit { 
-                    background-color: #3c3f41; 
-                    color: #ffffff; 
-                    border: 1px solid #555555; 
-                    border-radius: 8px; 
-                    padding: 5px; 
-                    min-height: 30px;
-                }
-                QTreeWidget QLineEdit { 
-                    min-height: 30px; 
-                    padding: 5px; 
-                    font-size: 14px; 
-                }
-                QSplitter::handle { 
-                    background-color: #555555; 
-                    border-radius: 5px; 
-                }
-                QMenu { 
-                    background-color: #3c3f41; 
-                    color: #ffffff; 
-                    border: 1px solid #555555; 
-                    padding: 5px;        /* Added padding for better spacing */
-                }
-                QMenu::item { 
-                    padding: 5px 25px 5px 25px;  /* Adjusted padding for icons */
-                }
-                QMenu::item:selected { 
-                    background-color: #5a5a5a; 
-                }
+            QMainWindow { 
+                background-color: #2b2b2b; 
+                color: #ffffff; 
+            }
+            QMenuBar {
+                background-color: #3c3f41;
+                border-radius: 5px; 
+                color: #ffffff;
+            }
+            QLabel {
+                color: #ffffff;               
+            }
+            QToolBar { 
+                background-color: #2b2b2b; 
+                border: none; 
+                padding: 5px; 
+                color: #ffffff;
+            }
+            QPushButton { 
+                background-color: #4a4a4a; 
+                color: #ffffff; 
+                border: none; 
+                border-radius: 8px; 
+                padding: 5px; 
+            }
+            QPushButton:hover { 
+                background-color: #5a5a5a; 
+            }
+            QTextEdit { 
+                background-color: #1e1e1e; 
+                color: #ffffff; 
+                border: 1px solid #555555; 
+                border-radius: 10px; 
+                padding: 5px; 
+            }
+            QTreeWidget { 
+                background-color: #333333; 
+                color: #ffffff; 
+                border: 1px solid #555555; 
+                border-radius: 10px; 
+            }
+            QTreeWidget::item:hover { 
+                background-color: #444444; 
+            }
+            QTreeWidget::item:selected { 
+                background-color: #5a5a5a; 
+                color: #ffffff; 
+            }
+            QTreeWidget::item:selected:hover { 
+                background-color: #666666; 
+                color: #ffffff; 
+            }
+            QHeaderView {
+                background-color: #000000;
+                border-radius: 10px;
+            }
+            QHeaderView::section { 
+                background-color: #3c3f41; 
+                color: #ffffff; 
+                border: none; 
+                padding: 5px; 
+                border-top-left-radius: 10px; 
+                border-top-right-radius: 10px; 
+            }
+            QLineEdit { 
+                background-color: #3c3f41; 
+                color: #ffffff; 
+                border: 1px solid #555555; 
+                border-radius: 8px; 
+                padding: 5px; 
+                min-height: 30px;
+            }
+            QTreeWidget QLineEdit { 
+                min-height: 30px; 
+                padding: 5px; 
+                font-size: 14px; 
+            }
+            QSplitter::handle { 
+                background-color: #555555; 
+                border-radius: 5px; 
+            }
+            QMenu { 
+                background-color: #3c3f41; 
+                color: #ffffff; 
+                border: 1px solid #555555; 
+                padding: 5px;
+            }
+            QMenu::item { 
+                padding: 5px 25px 5px 25px; 
+            }
+            QMenu::item:selected { 
+                background-color: #5a5a5a; 
+            }
+            QMessageBox { 
+                background-color: #000000; 
+                color: #ffffff; 
+                border: 1px solid #555555; 
+                border-radius: 5px; 
+                background-color: #3a3a3a;   
+            }
+            QMessageBox QLabel { 
+                color: #ffffff;  
+            }
+            QMessageBox QPushButton { 
+                background-color: #4a4a4a; 
+                color: #ffffff; 
+                border: none; 
+                border-radius: 8px; 
+                padding: 5px; 
+            }
+            QMessageBox QPushButton:hover { 
+                background-color: #5a5a5a; 
+            }
+            QTabWidget::pane { 
+                background-color: #2b2b2b; 
+                border: 1px solid #555555; 
+                border-radius: 5px; 
+            }
+            QTabBar::tab { 
+                background-color: #3c3f41; 
+                color: #ffffff; 
+                padding: 5px; 
+                border-top-left-radius: 5px; 
+                border-top-right-radius: 5px; 
+            }
+            QTabBar::tab:selected { 
+                background-color: #5a5a5a; 
+            }
+            QScrollArea { 
+                background-color: #2b2b2b; 
+                border: none; 
+            }
+            GridWidget { 
+                background-color: #1e1e1e; 
+            }
+            QDialog {
+                background-color: #2b2b2b;
+                color: #ffffff;
+            }
+            QComboBox {
+                background-color: #3c3f41;
+                color: #ffffff;
+                border: 1px solid #555555;
+                border-radius: 5px;
+                padding: 5px;
+            }
+            QComboBox QAbstractItemView {
+                background-color: #3c3f41;
+                color: #ffffff;
+                border: 1px solid #555555;
+            }
             """)
         else:
             self.setStyleSheet("""
-                QMainWindow { 
-                    background-color: #f0f0f0; 
-                    color: #000000; 
-                }
-                QMenuBar {
-                    background-color: #e0e0e0;
-                    border-radius: 5px; 
-                }
-                QLabel {
-                    color: #000000;               
-                }
-                QToolBar { 
-                    background-color: #f0f0f0; 
-                    border: none; 
-                    padding: 5px; 
-                }
-                QPushButton { 
-                    background-color: #d0d0d0; 
-                    color: #000000; 
-                    border: none; 
-                    border-radius: 8px; 
-                    padding: 5px; 
-                }
-                QPushButton:hover { 
-                    background-color: #c0c0c0; 
-                }
-                QTextEdit { 
-                    background-color: #ffffff; 
-                    color: #000000; 
-                    border: 1px solid #cccccc; 
-                    border-radius: 10px; 
-                    padding: 5px; 
-                }
-                QTreeWidget { 
-                    background-color: #ffffff; 
-                    color: #000000; 
-                    border: 1px solid #cccccc; 
-                    border-radius: 10px; 
-                }
-                QTreeWidget::item:hover { 
-                    background-color: #f5f5f5; 
-                }
-                QTreeWidget::item:selected { 
-                    background-color: #d0d0d0; 
-                    color: #000000; 
-                }
-                QTreeWidget::item:selected:hover { 
-                    background-color: #c0c0c0; 
-                    color: #000000; 
-                }
-                QHeaderView {
-                    background-color: #e0e0e0;
-                    border-radius: 10px;
-                }
-                QHeaderView::section { 
-                    background-color: #e0e0e0; 
-                    color: #000000; 
-                    border: none; 
-                    padding: 5px; 
-                    border-top-left-radius: 10px; 
-                    border-top-right-radius: 10px; 
-                }
-                QLineEdit { 
-                    background-color: #e0e0e0; 
-                    color: #000000; 
-                    border: 1px solid #cccccc; 
-                    border-radius: 5px; 
-                    padding: 5px; 
-                    min-height: 11px; 
-                }
-                QTreeWidget QLineEdit { 
-                    min-height: 11px; 
-                    padding: 5px; 
-                    font-size: 11px; 
-                }
-                QSplitter::handle { 
-                    background-color: #cccccc; 
-                    border-radius: 5px; 
-                }
-                QMenu { 
-                    background-color: #e0e0e0; 
-                    color: #000000; 
-                    border: 1px solid #cccccc; 
-                    border-radius: 10px;  /* Changed from 5px to 10px */
-                    padding: 5px;        /* Added padding for better spacing */
-                }
-                QMenu::item { 
-                    padding: 5px 25px 5px 25px;  /* Adjusted padding for icons */
-                }
-                QMenu::item:selected { 
-                    background-color: #d0d0d0; 
-                }
+            QMainWindow { 
+                background-color: #f0f0f0; 
+                color: #000000; 
+            }
+            QMenuBar {
+                background-color: #e0e0e0;
+                border-radius: 5px; 
+            }
+            QLabel {
+                color: #000000;               
+            }
+            QToolBar { 
+                background-color: #f0f0f0; 
+                border: none; 
+                padding: 5px; 
+            }
+            QPushButton { 
+                background-color: #d0d0d0; 
+                color: #000000; 
+                border: none; 
+                border-radius: 8px; 
+                padding: 5px; 
+            }
+            QPushButton:hover { 
+                background-color: #c0c0c0; 
+            }
+            QTextEdit { 
+                background-color: #ffffff; 
+                color: #000000; 
+                border: 1px solid #cccccc; 
+                border-radius: 10px; 
+                padding: 5px; 
+            }
+            QTreeWidget { 
+                background-color: #ffffff; 
+                color: #000000; 
+                border: 1px solid #cccccc; 
+                border-radius: 10px; 
+            }
+            QTreeWidget::item:hover { 
+                background-color: #f5f5f5; 
+            }
+            QTreeWidget::item:selected { 
+                background-color: #d0d0d0; 
+                color: #000000; 
+            }
+            QTreeWidget::item:selected:hover { 
+                background-color: #c0c0c0; 
+                color: #000000; 
+            }
+            QHeaderView {
+                background-color: #e0e0e0;
+                border-radius: 10px;
+            }
+            QHeaderView::section { 
+                background-color: #e0e0e0; 
+                color: #000000; 
+                border: none; 
+                padding: 5px; 
+                border-top-left-radius: 10px; 
+                border-top-right-radius: 10px; 
+            }
+            QLineEdit { 
+                background-color: #e0e0e0; 
+                color: #000000; 
+                border: 1px solid #cccccc; 
+                border-radius: 5px; 
+                padding: 5px; 
+                min-height: 11px; 
+            }
+            QTreeWidget QLineEdit { 
+                min-height: 11px; 
+                padding: 5px; 
+                font-size: 11px; 
+            }
+            QSplitter::handle { 
+                background-color: #cccccc; 
+                border-radius: 5px; 
+            }
+            QMenu { 
+                background-color: #e0e0e0; 
+                color: #000000; 
+                border: 1px solid #cccccc; 
+                border-radius: 10px; 
+                padding: 5px; 
+            }
+            QMenu::item { 
+                padding: 5px 25px 5px 25px; 
+            }
+            QMenu::item:selected { 
+                background-color: #d0d0d0; 
+            }
+            QTabWidget::pane { 
+                background-color: #f0f0f0; 
+                border: 1px solid #cccccc; 
+                border-radius: 5px; 
+            }
+            QTabBar::tab { 
+                background-color: #e0e0e0; 
+                color: #000000; 
+                padding: 5px; 
+                border-top-left-radius: 5px; 
+                border-top-right-radius: 5px; 
+            }
+            QTabBar::tab:selected { 
+                background-color: #d0d0d0; 
+            }
+            QScrollArea { 
+                background-color: #f0f0f0; 
+                border: none; 
+            }
+            GridWidget { 
+                background-color: #ffffff; 
+            }
+            QDialog {
+                background-color: #f0f0f0;
+                color: #000000;
+            }
+            QComboBox {
+                background-color: #e0e0e0;
+                color: #000000;
+                border: 1px solid #cccccc;
+                border-radius: 5px;
+                padding: 5px;
+            }
+            QComboBox QAbstractItemView {
+                background-color: #e0e0e0;
+                color: #000000;
+                border: 1px solid #cccccc;
+            }
             """)
 
     def animate_button(self, button):
@@ -369,7 +634,7 @@ class HTMLEditor(QMainWindow):
 
         search_text = text.replace(" ", "").lower()
         
-        if not search_text:
+        if not self.search_bar.text():
             self.file_tree.clear()
             self.load_project_structure(self.project_path)
             self.restore_expanded_state(self.file_tree.topLevelItem(0))
@@ -470,13 +735,16 @@ class HTMLEditor(QMainWindow):
             self.file_tree.clear()
             self.load_project_structure(self.project_path)
             self.search_bar.setVisible(True)
+            self.tab_widget.setVisible(True)
             self.update_breadcrumbs(self.file_tree.topLevelItem(0))
+            self.select_main_files()
             self.statusBar().showMessage(f'Nuovo progetto creato in {self.project_path}', 2000)
 
         except Exception as e:
             QMessageBox.warning(self, "Errore", f"Errore durante la creazione del progetto: {str(e)}")
             self.project_path = None
             self.search_bar.setVisible(False)
+            self.tab_widget.setVisible(False)
 
     def openProject(self):
         default_path = os.getcwd()
@@ -488,10 +756,33 @@ class HTMLEditor(QMainWindow):
             self.file_tree.clear()
             self.load_project_structure(self.project_path)
             self.search_bar.setVisible(True)
+            self.tab_widget.setVisible(True)
             self.update_breadcrumbs(self.file_tree.topLevelItem(0))
+            self.select_main_files()
             self.statusBar().showMessage(f'Progetto aperto: {self.project_path}', 2000)
         else:
             self.search_bar.setVisible(False)
+            self.tab_widget.setVisible(False)
+
+    def select_main_files(self):
+        dialog = FileSelectionDialog(self.project_path, self)
+        if dialog.exec_():
+            html_file, css_file, js_file = dialog.get_selected_files()
+            self.main_html_file = os.path.join(self.project_path, html_file) if html_file else None
+            self.main_css_file = os.path.join(self.project_path, css_file) if css_file else None
+            self.main_js_file = os.path.join(self.project_path, js_file) if js_file else None
+            if self.main_html_file:
+                self.load_html_to_design_view()
+            self.statusBar().showMessage(f"Main files selected: HTML={html_file}, CSS={css_file}, JS={js_file}", 2000)
+
+    def load_html_to_design_view(self):
+        if self.main_html_file and os.path.exists(self.main_html_file):
+            with open(self.main_html_file, "r", encoding="utf-8") as f:
+                content = f.read()
+                self.design_view.items.clear()
+                for widget, _ in self.design_view.items:
+                    widget.deleteLater()
+                self.design_view.update()
 
     def load_project_structure(self, path, parent=None):
         if parent is None:
@@ -682,6 +973,7 @@ class HTMLEditor(QMainWindow):
                 self.file_tree.takeTopLevelItem(self.file_tree.indexOfTopLevelItem(item))
                 self.project_path = None
                 self.search_bar.setVisible(False)
+                self.tab_widget.setVisible(False)
             self.statusBar().showMessage(f"Eliminato: {item_path}", 2000)
         except Exception as e:
             QMessageBox.warning(self, "Errore", f"Impossibile eliminare: {str(e)}")
