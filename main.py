@@ -10,6 +10,8 @@ from PyQt5.QtCore import Qt, QPropertyAnimation, QEasingCurve, QMimeData, QPoint
 from PyQt5.QtGui import QIcon, QTextDocument, QColor, QDrag, QPainter, QPen, QBrush
 from fuzzywuzzy import fuzz
 
+from CodeEditor import CodeEditor, LineNumberArea, SyntaxHighlighter
+
 class GridWidget(QWidget):
     def __init__(self, editor, parent=None):
         super().__init__(parent)
@@ -253,9 +255,10 @@ class HTMLEditor(QMainWindow):
         # Stacked widget for views
         self.view_stack = QStackedWidget()
         self.design_view = GridWidget(self)
-        self.code_view = QTextEdit()
+        self.code_view = CodeEditor(self)  # Use imported CodeEditor
         self.code_view.setPlaceholderText("Code View")
         self.code_view.textChanged.connect(self.save_current_file)
+        self.highlighter = SyntaxHighlighter(self.code_view.document())  # Apply syntax highlighter
 
         self.view_stack.addWidget(self.design_view)
         self.view_stack.addWidget(self.code_view)
@@ -1154,7 +1157,7 @@ class HTMLEditor(QMainWindow):
         
     def save_current_file(self):
         if self.current_file and os.path.isfile(self.current_file):
-            content = self.file_histories[self.current_file].toPlainText()
+            content = self.code_view.document().toPlainText()
             try:
                 with open(self.current_file, "w", encoding="utf-8") as f:
                     f.write(content)
