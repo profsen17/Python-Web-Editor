@@ -32,9 +32,199 @@ class CodeEditor(QTextEdit):
 
     def setup_completer(self):
         # Define completion lists for HTML, CSS, and JS
-        html_tags = ["div", "span", "p", "h1", "h2", "h3", "img", "a", "ul", "li", "table", "tr", "td", "input", "form", "body", "head", "html"]
-        css_properties = ["color", "background", "font-size", "margin", "padding", "border", "display", "flex", "grid", "position", "top", "left", "width", "height"]
-        js_functions = ["function", "var", "let", "const", "if", "else", "for", "while", "return", "console.log", "document", "getElementById", "addEventListener"]
+        html_tags = [
+          "a", "abbr", "acronym", "address", "applet", "area", "article", "aside", "audio", 
+          "b", "base", "basefont", "bdi", "bdo", "big", "blockquote", "body", "br", "button", 
+          "canvas", "caption", "center", "cite", "code", "col", "colgroup", "command", "content", 
+          "data", "datalist", "dd", "del", "details", "dfn", "dialog", "dir", "div", "dl", "dt", 
+          "em", "embed", "fieldset", "figcaption", "figure", "font", "footer", "form", "frame", 
+          "frameset", "h1", "h2", "h3", "h4", "h5", "h6", "head", "header", "hgroup", "hr", "html", 
+          "i", "iframe", "img", "input", "ins", "isindex", "kbd", "keygen", "label", "legend", 
+          "li", "link", "main", "map", "mark", "marquee", "menu", "menuitem", "meta", "meter", 
+          "nav", "nobr", "noframes", "noscript", "object", "ol", "optgroup", "option", "output", 
+          "p", "param", "picture", "plaintext", "pre", "progress", "q", "rb", "rp", "rt", "rtc", 
+          "ruby", "s", "samp", "script", "section", "select", "shadow", "small", "source", "spacer", 
+          "span", "strike", "strong", "style", "sub", "summary", "sup", "svg", "table", "tbody", 
+          "td", "template", "textarea", "tfoot", "th", "thead", "time", "title", "tr", "track", 
+          "tt", "u", "ul", "var", "video", "wbr", "xmp"
+        ]
+
+        css_properties = [
+          "align-content", "align-items", "align-self", "all", "animation", "animation-delay", 
+          "animation-direction", "animation-duration", "animation-fill-mode", "animation-iteration-count", 
+          "animation-name", "animation-play-state", "animation-timing-function", "appearance", "aspect-ratio", 
+          "backdrop-filter", "backface-visibility", "background", "background-attachment", "background-blend-mode", 
+          "background-clip", "background-color", "background-image", "background-origin", "background-position", 
+          "background-repeat", "background-size", "block-size", "border", "border-block", "border-block-color", 
+          "border-block-end", "border-block-end-color", "border-block-end-style", "border-block-end-width", 
+          "border-block-start", "border-block-start-color", "border-block-start-style", "border-block-start-width", 
+          "border-block-style", "border-block-width", "border-bottom", "border-bottom-color", "border-bottom-left-radius", 
+          "border-bottom-right-radius", "border-bottom-style", "border-bottom-width", "border-collapse", "border-color", 
+          "border-end-end-radius", "border-end-start-radius", "border-image", "border-image-outset", "border-image-repeat", 
+          "border-image-slice", "border-image-source", "border-image-width", "border-inline", "border-inline-color", 
+          "border-inline-end", "border-inline-end-color", "border-inline-end-style", "border-inline-end-width", 
+          "border-inline-start", "border-inline-start-color", "border-inline-start-style", "border-inline-start-width", 
+          "border-inline-style", "border-inline-width", "border-left", "border-left-color", "border-left-style", 
+          "border-left-width", "border-radius", "border-right", "border-right-color", "border-right-style", "border-right-width", 
+          "border-spacing", "border-start-end-radius", "border-start-start-radius", "border-style", "border-top", 
+          "border-top-color", "border-top-left-radius", "border-top-right-radius", "border-top-style", "border-top-width", 
+          "border-width", "bottom", "box-decoration-break", "box-shadow", "box-sizing", "break-after", "break-before", 
+          "break-inside", "caption-side", "caret-color", "clear", "clip", "clip-path", "color", "column-count", "column-fill", 
+          "column-gap", "column-rule", "column-rule-color", "column-rule-style", "column-rule-width", "column-span", 
+          "column-width", "columns", "contain", "content", "content-visibility", "counter-increment", "counter-reset", 
+          "counter-set", "cursor", "direction", "display", "empty-cells", "filter", "flex", "flex-basis", "flex-direction", 
+          "flex-flow", "flex-grow", "flex-shrink", "flex-wrap", "float", "font", "font-display", "font-family", "font-feature-settings", 
+          "font-kerning", "font-optical-sizing", "font-size", "font-size-adjust", "font-stretch", "font-style", "font-synthesis", 
+          "font-variant", "font-variant-alternates", "font-variant-caps", "font-variant-east-asian", "font-variant-ligatures", 
+          "font-variant-numeric", "font-variant-position", "font-variation-settings", "font-weight", "gap", "grid", 
+          "grid-area", "grid-auto-columns", "grid-auto-flow", "grid-auto-rows", "grid-column", "grid-column-end", 
+          "grid-column-gap", "grid-column-start", "grid-gap", "grid-row", "grid-row-end", "grid-row-gap", "grid-row-start", 
+          "grid-template", "grid-template-areas", "grid-template-columns", "grid-template-rows", "hanging-punctuation", 
+          "height", "hyphens", "image-orientation", "image-rendering", "inline-size", "inset", "inset-block", "inset-block-end", 
+          "inset-block-start", "inset-inline", "inset-inline-end", "inset-inline-start", "isolation", "justify-content", 
+          "justify-items", "justify-self", "left", "letter-spacing", "line-break", "line-height", "list-style", "list-style-image", 
+          "list-style-position", "list-style-type", "margin", "margin-block", "margin-block-end", "margin-block-start", 
+          "margin-bottom", "margin-inline", "margin-inline-end", "margin-inline-start", "margin-left", "margin-right", 
+          "margin-top", "mask", "mask-border", "mask-border-mode", "mask-border-outset", "mask-border-repeat", 
+          "mask-border-slice", "mask-border-source", "mask-border-width", "mask-clip", "mask-composite", "mask-image", 
+          "mask-mode", "mask-origin", "mask-position", "mask-repeat", "mask-size", "mask-type", "max-block-size", 
+          "max-height", "max-inline-size", "max-width", "min-block-size", "min-height", "min-inline-size", "min-width", 
+          "mix-blend-mode", "object-fit", "object-position", "offset", "offset-anchor", "offset-distance", "offset-path", 
+          "offset-position", "offset-rotate", "opacity", "order", "orphans", "outline", "outline-color", "outline-offset", 
+          "outline-style", "outline-width", "overflow", "overflow-anchor", "overflow-block", "overflow-clip-box", 
+          "overflow-inline", "overflow-wrap", "overflow-x", "overflow-y", "overscroll-behavior", "overscroll-behavior-block", 
+          "overscroll-behavior-inline", "overscroll-behavior-x", "overscroll-behavior-y", "padding", "padding-block", 
+          "padding-block-end", "padding-block-start", "padding-bottom", "padding-inline", "padding-inline-end", 
+          "padding-inline-start", "padding-left", "padding-right", "padding-top", "page-break-after", "page-break-before", 
+          "page-break-inside", "paint-order", "perspective", "perspective-origin", "place-content", "place-items", 
+          "place-self", "pointer-events", "position", "quotes", "resize", "right", "rotate", "row-gap", "scale", 
+          "scroll-behavior", "scroll-margin", "scroll-margin-block", "scroll-margin-block-end", "scroll-margin-block-start", 
+          "scroll-margin-bottom", "scroll-margin-inline", "scroll-margin-inline-end", "scroll-margin-inline-start", 
+          "scroll-margin-left", "scroll-margin-right", "scroll-margin-top", "scroll-padding", "scroll-padding-block", 
+          "scroll-padding-block-end", "scroll-padding-block-start", "scroll-padding-bottom", "scroll-padding-inline", 
+          "scroll-padding-inline-end", "scroll-padding-inline-start", "scroll-padding-left", "scroll-padding-right", 
+          "scroll-padding-top", "scroll-snap-align", "scroll-snap-stop", "scroll-snap-type", "scrollbar-color", 
+          "scrollbar-gutter", "scrollbar-width", "shape-image-threshold", "shape-margin", "shape-outside", "tab-size", 
+          "table-layout", "text-align", "text-align-last", "text-combine-upright", "text-decoration", "text-decoration-color", 
+          "text-decoration-line", "text-decoration-style", "text-decoration-thickness", "text-emphasis", "text-emphasis-color", 
+          "text-emphasis-position", "text-emphasis-style", "text-indent", "text-justify", "text-orientation", 
+          "text-overflow", "text-rendering", "text-shadow", "text-transform", "text-underline-offset", "text-underline-position", 
+          "top", "touch-action", "transform", "transform-box", "transform-origin", "transform-style", "transition", 
+          "transition-delay", "transition-duration", "transition-property", "transition-timing-function", "unicode-bidi", 
+          "user-select", "vertical-align", "visibility", "white-space", "width", "will-change", "word-break", 
+          "word-spacing", "word-wrap", "writing-mode", "z-index", "zoom"
+        ]
+
+        js_functions = [
+          # Keywords
+          "break", "case", "catch", "class", "const", "continue", "debugger", "default", "delete", "do",
+          "else", "enum", "export", "extends", "false", "finally", "for", "function", "if", "import", "in",
+          "instanceof", "let", "new", "null", "return", "super", "switch", "this", "throw", "true", "try",
+          "typeof", "var", "void", "while", "with", "yield",
+    
+          # Console functions
+          "console.log", "console.error", "console.warn", "console.info", "console.debug", "console.clear",
+          "console.table", "console.time", "console.timeEnd", "console.count", "console.group",
+          "console.groupEnd", "console.trace",
+
+          # Document functions
+          "document.getElementById", "document.getElementsByClassName", "document.getElementsByTagName",
+          "document.querySelector", "document.querySelectorAll", "document.createElement",
+          "document.createTextNode", "document.appendChild", "document.removeChild",
+          "document.replaceChild", "document.write", "document.execCommand",
+
+          # Event functions
+          "addEventListener", "removeEventListener", "dispatchEvent",
+
+          # Window functions
+          "alert", "confirm", "prompt", "setTimeout", "setInterval", "clearTimeout", "clearInterval",
+          "requestAnimationFrame", "cancelAnimationFrame", "scrollTo", "scrollBy",
+
+          # Math functions
+          "Math.abs", "Math.ceil", "Math.floor", "Math.round", "Math.max", "Math.min",
+          "Math.pow", "Math.sqrt", "Math.random", "Math.sin", "Math.cos", "Math.tan",
+          "Math.log", "Math.exp",
+
+          # String functions
+          "String.fromCharCode", "String.fromCodePoint", "String.prototype.charAt",
+          "String.prototype.charCodeAt", "String.prototype.codePointAt",
+          "String.prototype.concat", "String.prototype.includes", "String.prototype.indexOf",
+          "String.prototype.lastIndexOf", "String.prototype.match", "String.prototype.replace",
+          "String.prototype.search", "String.prototype.slice", "String.prototype.split",
+          "String.prototype.startsWith", "String.prototype.endsWith", "String.prototype.substring",
+          "String.prototype.toLowerCase", "String.prototype.toUpperCase", "String.prototype.trim",
+
+          # Array functions
+          "Array.isArray", "Array.from", "Array.of", "Array.prototype.concat",
+          "Array.prototype.every", "Array.prototype.filter", "Array.prototype.find",
+          "Array.prototype.findIndex", "Array.prototype.forEach", "Array.prototype.includes",
+          "Array.prototype.indexOf", "Array.prototype.join", "Array.prototype.map",
+          "Array.prototype.pop", "Array.prototype.push", "Array.prototype.reduce",
+          "Array.prototype.reduceRight", "Array.prototype.reverse", "Array.prototype.shift",
+          "Array.prototype.slice", "Array.prototype.some", "Array.prototype.sort",
+          "Array.prototype.splice", "Array.prototype.unshift",
+
+          # Object functions
+          "Object.assign", "Object.create", "Object.defineProperty", "Object.defineProperties",
+          "Object.entries", "Object.freeze", "Object.fromEntries", "Object.getOwnPropertyDescriptor",
+          "Object.getOwnPropertyDescriptors", "Object.getOwnPropertyNames", "Object.getOwnPropertySymbols",
+          "Object.getPrototypeOf", "Object.is", "Object.isExtensible", "Object.isFrozen",
+          "Object.isSealed", "Object.keys", "Object.preventExtensions", "Object.seal", "Object.setPrototypeOf",
+          "Object.values",
+
+          # JSON functions
+          "JSON.parse", "JSON.stringify",
+
+          # Date functions
+          "Date.now", "Date.parse", "Date.prototype.getDate", "Date.prototype.getDay",
+          "Date.prototype.getFullYear", "Date.prototype.getHours", "Date.prototype.getMilliseconds",
+          "Date.prototype.getMinutes", "Date.prototype.getMonth", "Date.prototype.getSeconds",
+          "Date.prototype.getTime", "Date.prototype.getTimezoneOffset", "Date.prototype.getUTCDate",
+          "Date.prototype.getUTCDay", "Date.prototype.getUTCFullYear", "Date.prototype.getUTCHours",
+          "Date.prototype.getUTCMilliseconds", "Date.prototype.getUTCMinutes", "Date.prototype.getUTCMonth",
+          "Date.prototype.getUTCSeconds", "Date.prototype.setDate", "Date.prototype.setFullYear",
+          "Date.prototype.setHours", "Date.prototype.setMilliseconds", "Date.prototype.setMinutes",
+          "Date.prototype.setMonth", "Date.prototype.setSeconds", "Date.prototype.setTime",
+          "Date.prototype.setUTCDate", "Date.prototype.setUTCFullYear", "Date.prototype.setUTCHours",
+          "Date.prototype.setUTCMilliseconds", "Date.prototype.setUTCMinutes", "Date.prototype.setUTCMonth",
+          "Date.prototype.setUTCSeconds", "Date.prototype.toDateString", "Date.prototype.toISOString",
+          "Date.prototype.toJSON", "Date.prototype.toLocaleDateString", "Date.prototype.toLocaleString",
+          "Date.prototype.toLocaleTimeString", "Date.prototype.toString", "Date.prototype.toTimeString",
+          "Date.prototype.toUTCString",
+
+          # Fetch & Ajax functions
+          "fetch", "XMLHttpRequest", "XMLHttpRequest.prototype.open", "XMLHttpRequest.prototype.send",
+          "XMLHttpRequest.prototype.setRequestHeader", "XMLHttpRequest.prototype.getResponseHeader",
+          "XMLHttpRequest.prototype.abort",
+
+          # Storage functions
+          "localStorage.setItem", "localStorage.getItem", "localStorage.removeItem",
+          "localStorage.clear", "sessionStorage.setItem", "sessionStorage.getItem",
+          "sessionStorage.removeItem", "sessionStorage.clear",
+
+          # Web APIs
+          "navigator.geolocation.getCurrentPosition", "navigator.geolocation.watchPosition",
+          "navigator.geolocation.clearWatch", "navigator.clipboard.writeText",
+          "navigator.clipboard.readText",
+
+          # Web Workers
+          "Worker", "Worker.prototype.postMessage", "Worker.prototype.terminate",
+
+          # Promises & Async functions
+          "Promise", "Promise.resolve", "Promise.reject", "Promise.all", "Promise.race",
+          "Promise.allSettled", "Promise.any", "async", "await",
+
+          # WebSockets
+          "WebSocket", "WebSocket.prototype.send", "WebSocket.prototype.close",
+
+          # Error handling
+          "try", "catch", "finally", "throw", "Error", "TypeError", "SyntaxError",
+          "ReferenceError", "RangeError",
+
+          # Miscellaneous
+          "setImmediate", "clearImmediate", "queueMicrotask", "structuredClone"
+        ]
+
 
         # Combine all completions (we'll filter based on file type later)
         completions = html_tags + css_properties + js_functions
