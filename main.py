@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QTextEdit, QTreeWidget,
                             QTreeWidgetItem, QSplitter, QWidget, QVBoxLayout, 
                             QAction, QMenu, QHBoxLayout, QFileDialog, QMessageBox,
                             QToolBar, QPushButton, QLabel, QInputDialog, QLineEdit,
-                            QTabWidget, QGridLayout, QScrollArea, QDialog, QComboBox, QFormLayout)
+                            QTabWidget, QGridLayout, QScrollArea, QDialog, QComboBox, QFormLayout, QStackedWidget)
 from PyQt5.QtCore import Qt, QPropertyAnimation, QEasingCurve, QMimeData, QPoint, QSize
 from PyQt5.QtGui import QIcon, QTextDocument, QColor, QDrag, QPainter, QPen, QBrush
 from fuzzywuzzy import fuzz
@@ -189,6 +189,11 @@ class HTMLEditor(QMainWindow):
         self.file_tree.viewport().installEventFilter(self)
         project_files_layout.addWidget(self.file_tree)
         
+        # Add New Page button below the file tree
+        new_page_button = QPushButton("New Page")
+        new_page_button.clicked.connect(self.newPage)
+        project_files_layout.addWidget(new_page_button)
+        
         project_files_widget.setLayout(project_files_layout)
         self.tab_widget.addTab(project_files_widget, "Project Files")
         
@@ -226,24 +231,42 @@ class HTMLEditor(QMainWindow):
         sidebar_widget.setLayout(sidebar_layout)
         sidebar_widget.setMinimumWidth(200)
 
-        right_widget = QWidget()
+        # Assign right_widget as an instance variable
+        self.right_widget = QWidget()
         right_layout = QVBoxLayout()
-        
-        content_splitter = QSplitter(Qt.Vertical)
-        
-        self.design_view = GridWidget(self)  # Pass self (HTMLEditor) to GridWidget
-        content_splitter.addWidget(self.design_view)
-        
+
+        # Toolbar for switching views
+        view_toolbar = QToolBar()
+        self.design_button = QPushButton("Design View")
+        self.design_button.setCheckable(True)
+        self.design_button.setChecked(True)
+        self.design_button.clicked.connect(self.switch_to_design)
+        view_toolbar.addWidget(self.design_button)
+
+        self.code_button = QPushButton("Code View")
+        self.code_button.setCheckable(True)
+        self.code_button.clicked.connect(self.switch_to_code)
+        view_toolbar.addWidget(self.code_button)
+
+        right_layout.addWidget(view_toolbar)
+
+        # Stacked widget for views
+        self.view_stack = QStackedWidget()
+        self.design_view = GridWidget(self)
         self.code_view = QTextEdit()
         self.code_view.setPlaceholderText("Code View")
         self.code_view.textChanged.connect(self.save_current_file)
-        content_splitter.addWidget(self.code_view)
-        
-        right_layout.addWidget(content_splitter)
-        right_widget.setLayout(right_layout)
+
+        self.view_stack.addWidget(self.design_view)
+        self.view_stack.addWidget(self.code_view)
+        right_layout.addWidget(self.view_stack)
+
+        self.right_widget.setLayout(right_layout)
+        # Initially hide the right widget if no project is loaded
+        self.right_widget.setVisible(False)
 
         main_splitter.addWidget(sidebar_widget)
-        main_splitter.addWidget(right_widget)
+        main_splitter.addWidget(self.right_widget)
         
         main_widget = QWidget()
         main_layout = QHBoxLayout()
@@ -254,6 +277,118 @@ class HTMLEditor(QMainWindow):
         self.createMenu()
         self.apply_theme()
         self.show()
+    
+    def switch_to_design(self):
+        if self.current_file and self.current_file.endswith('.html'):
+            self.view_stack.setCurrentWidget(self.design_view)
+            self.design_button.setChecked(True)
+            self.code_button.setChecked(False)
+
+    def switch_to_code(self):
+        self.view_stack.setCurrentWidget(self.code_view)
+        self.code_button.setChecked(True)
+        self.design_button.setChecked(False)
+        
+    def createMenu(self):
+        menubar = self.menuBar()
+        fileMenu = menubar.addMenu('File')
+        
+        newAct = QAction('Nuovo Progetto', self)
+        newAct.setShortcut('Ctrl+N')
+        newAct.triggered.connect(self.newProject)
+        fileMenu.addAction(newAct)
+        
+        openAct = QAction('Apri Progetto', self)
+        openAct.setShortcut('Ctrl+O')
+        openAct.triggered.connect(self.openProject)
+        fileMenu.addAction(openAct)
+        
+        saveAct = QAction('Salva', self)
+        saveAct.setShortcut('Ctrl+S')
+        saveAct.triggered.connect(self.save_current_file)
+        fileMenu.addAction(saveAct)
+
+        # Add New Page action
+        newPageAct = QAction('Nuova Pagina', self)
+        newPageAct.setShortcut('Ctrl+Shift+N')
+        newPageAct.triggered.connect(self.newPage)
+        fileMenu.addAction(newPageAct)
+
+        themeMenu = menubar.addMenu('Theme')
+        lightAct = QAction('Light Mode', self)
+        lightAct.triggered.connect(lambda: self.set_theme(False))
+        themeMenu.addAction(lightAct)
+        
+        darkAct = QAction('Dark Mode', self)
+        darkAct.triggered.connect(lambda: self.set_theme(True))
+        themeMenu.addAction(darkAct)
+    
+    def newPage(self):
+        if not self.project_path:
+            QMessageBox.warning(self, "Errore", "Crea o apri un progetto prima")
+            return
+
+        page_name, ok = QInputDialog.getText(self, "Nuova Pagina", "Inserisci il nome della pagina:", text="NewPage")
+        if not ok or not page_name:
+            QMessageBox.warning(self, "Errore", "Devi inserire un nome per la pagina.")
+            return
+
+        try:
+            # Define folder paths
+            script_folder_path = os.path.join(self.project_path, "Scripts")
+            css_folder_path = os.path.join(script_folder_path, "css")
+            js_folder_path = os.path.join(script_folder_path, "js")
+            html_folder_path = os.path.join(script_folder_path, "html")
+
+            # Ensure folders exist
+            os.makedirs(css_folder_path, exist_ok=True)
+            os.makedirs(js_folder_path, exist_ok=True)
+            os.makedirs(html_folder_path, exist_ok=True)
+
+            # Create files with the page name
+            html_file_path = os.path.join(html_folder_path, f"{page_name}.html")
+            css_file_path = os.path.join(css_folder_path, f"{page_name}.css")
+            js_file_path = os.path.join(js_folder_path, f"{page_name}.js")
+
+            # Write initial content to files
+            with open(html_file_path, "w") as f:
+                f.write(f"<html>\n<head>\n<link rel=\"stylesheet\" href=\"../css/{page_name}.css\">\n<script src=\"../js/{page_name}.js\"></script>\n</head>\n<body>\n</body>\n</html>")
+            with open(css_file_path, "w") as f:
+                f.write(f"/* CSS for {page_name} */\n")
+            with open(js_file_path, "w") as f:
+                f.write(f"// JavaScript for {page_name}\n")
+
+            # Update file tree
+            self.file_tree.clear()
+            self.load_project_structure(self.project_path)
+            self.restore_expanded_state(self.file_tree.topLevelItem(0))
+            
+            # Find and select the new HTML file in the tree
+            html_item = self.find_item_by_path(html_file_path)
+            if html_item:
+                self.file_tree.setCurrentItem(html_item)
+                self.update_breadcrumbs(html_item)
+                self.handle_item_clicked(html_item, 0)
+
+            self.statusBar().showMessage(f'Nuova pagina "{page_name}" creata in {html_folder_path}', 2000)
+
+        except Exception as e:
+            QMessageBox.warning(self, "Errore", f"Errore durante la creazione della pagina: {str(e)}")
+            
+    def find_item_by_path(self, path):
+        def search_tree(item):
+            if item.data(0, Qt.UserRole) == path:
+                return item
+            for i in range(item.childCount()):
+                result = search_tree(item.child(i))
+                if result:
+                    return result
+            return None
+
+        root = self.file_tree.topLevelItem(0)
+        if root:
+            return search_tree(root)
+        return None
     
     def apply_theme(self):
         if self.is_dark_mode:
@@ -738,6 +873,8 @@ class HTMLEditor(QMainWindow):
             self.tab_widget.setVisible(True)
             self.update_breadcrumbs(self.file_tree.topLevelItem(0))
             self.select_main_files()
+            # Show the right widget when a project is created
+            self.right_widget.setVisible(True)
             self.statusBar().showMessage(f'Nuovo progetto creato in {self.project_path}', 2000)
 
         except Exception as e:
@@ -745,6 +882,7 @@ class HTMLEditor(QMainWindow):
             self.project_path = None
             self.search_bar.setVisible(False)
             self.tab_widget.setVisible(False)
+            self.right_widget.setVisible(False)
 
     def openProject(self):
         default_path = os.getcwd()
@@ -759,11 +897,14 @@ class HTMLEditor(QMainWindow):
             self.tab_widget.setVisible(True)
             self.update_breadcrumbs(self.file_tree.topLevelItem(0))
             self.select_main_files()
+            # Show the right widget when a project is opened
+            self.right_widget.setVisible(True)
             self.statusBar().showMessage(f'Progetto aperto: {self.project_path}', 2000)
         else:
             self.search_bar.setVisible(False)
             self.tab_widget.setVisible(False)
-
+            self.right_widget.setVisible(False)
+            
     def select_main_files(self):
         dialog = FileSelectionDialog(self.project_path, self)
         if dialog.exec_():
@@ -941,7 +1082,7 @@ class HTMLEditor(QMainWindow):
         new_folder.setFlags(new_folder.flags() | Qt.ItemIsEditable)
         self.file_tree.editItem(new_folder, 0)
         self.file_tree.itemChanged.connect(lambda item, column: self.update_file_icon(item) if item == new_folder else None)
-
+        
     def delete_item(self, item):
         item_path = item.data(0, Qt.UserRole)
         if not item_path or not os.path.exists(item_path):
@@ -974,6 +1115,7 @@ class HTMLEditor(QMainWindow):
                 self.project_path = None
                 self.search_bar.setVisible(False)
                 self.tab_widget.setVisible(False)
+                self.right_widget.setVisible(False)
             self.statusBar().showMessage(f"Eliminato: {item_path}", 2000)
         except Exception as e:
             QMessageBox.warning(self, "Errore", f"Impossibile eliminare: {str(e)}")
@@ -991,9 +1133,25 @@ class HTMLEditor(QMainWindow):
                     QMessageBox.warning(self, "Errore", f"Impossibile aprire il file: {str(e)}")
                     return
             self.code_view.setDocument(self.file_histories[file_path])
+            
+            # Show/hide design view based on file type
+            if file_path.endswith('.html'):
+                self.design_button.setVisible(True)
+                self.code_button.setVisible(True)
+                # If design view was last selected, switch to it; otherwise, stay in code view
+                if self.design_button.isChecked():
+                    self.switch_to_design()
+                else:
+                    self.switch_to_code()
+            else:
+                # For non-HTML files (e.g., CSS, JS), show only code view
+                self.design_button.setVisible(False)
+                self.code_button.setVisible(True)
+                self.switch_to_code()
+
             self.statusBar().showMessage(f'Aperto: {file_path}', 2000)
         self.update_breadcrumbs(item)
-
+        
     def save_current_file(self):
         if self.current_file and os.path.isfile(self.current_file):
             content = self.file_histories[self.current_file].toPlainText()
