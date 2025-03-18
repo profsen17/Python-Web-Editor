@@ -1,15 +1,97 @@
 import sys
 import os
 import shutil
-from PyQt5.QtWidgets import (QApplication, QMainWindow, QTextEdit, QTreeWidget, 
+from PyQt5.QtWidgets import (QApplication, QMainWindow, QPlainTextEdit, QTreeWidget, 
                             QTreeWidgetItem, QSplitter, QWidget, QVBoxLayout, 
                             QAction, QMenu, QHBoxLayout, QFileDialog, QMessageBox,
                             QToolBar, QPushButton, QLabel, QInputDialog, QLineEdit,
-                            QTabWidget, QGridLayout, QScrollArea, QDialog, QComboBox, QFormLayout)
-from PyQt5.QtCore import Qt, QPropertyAnimation, QEasingCurve, QMimeData, QPoint, QSize
-from PyQt5.QtGui import QIcon, QTextDocument, QColor, QDrag, QPainter, QPen, QBrush
-from PyQt5.QtWidgets import QStackedWidget
+                            QTabWidget, QGridLayout, QScrollArea, QDialog, QComboBox, 
+                            QFormLayout, QStackedWidget, QTextEdit)
+from PyQt5.QtCore import Qt, QPropertyAnimation, QEasingCurve, QMimeData, QPoint, QSize, QRect
+from PyQt5.QtGui import QIcon, QColor, QDrag, QPainter, QPen, QBrush, QFont, QTextFormat, QTextCharFormat
 from fuzzywuzzy import fuzz
+
+class LineNumberArea(QWidget):
+    def __init__(self, editor):
+        super().__init__(editor)
+        self.code_editor = editor
+
+    def sizeHint(self):
+        return QSize(self.code_editor.line_number_area_width(), 0)
+
+    def paintEvent(self, event):
+        self.code_editor.line_number_area_paint_event(event)
+
+class CodeEditor(QPlainTextEdit):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setFont(QFont("Courier", 10))  # Use a monospaced font for better alignment
+        self.line_number_area = LineNumberArea(self)
+        self.blockCountChanged.connect(self.update_line_number_area_width)
+        self.updateRequest.connect(self.update_line_number_area)
+        self.cursorPositionChanged.connect(self.highlight_current_line)
+        self.update_line_number_area_width(0)
+
+    def line_number_area_width(self):
+        digits = 1
+        max_lines = max(1, self.blockCount())
+        while max_lines >= 10:
+            max_lines /= 10
+            digits += 1
+        space = 3 + self.fontMetrics().horizontalAdvance('9') * digits
+        return space
+
+    def update_line_number_area_width(self, _):
+        self.setViewportMargins(self.line_number_area_width(), 0, 0, 0)
+
+    def update_line_number_area(self, rect, dy):
+        if dy:
+            self.line_number_area.scroll(0, dy)
+        else:
+            self.line_number_area.update(0, rect.y(), self.line_number_area.width(), rect.height())
+        if rect.contains(self.viewport().rect()):
+            self.update_line_number_area_width(0)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        cr = self.contentsRect()
+        self.line_number_area.setGeometry(QRect(cr.left(), cr.top(), self.line_number_area_width(), cr.height()))
+
+    def highlight_current_line(self):
+        extra_selections = []
+        if not self.isReadOnly():
+            # Create an extra selection for the current line
+            selection = QTextEdit.ExtraSelection()
+            line_color = QColor(Qt.yellow).lighter(160)
+            selection.format.setBackground(line_color)
+            selection.format.setProperty(QTextFormat.FullWidthSelection, True)
+            selection.cursor = self.textCursor()
+            selection.cursor.clearSelection()
+            extra_selections.append(selection)
+        self.setExtraSelections(extra_selections)
+
+    def line_number_area_paint_event(self, event):
+        painter = QPainter(self.line_number_area)
+        painter.fillRect(event.rect(), Qt.lightGray)
+
+        block = self.firstVisibleBlock()
+        block_number = block.blockNumber()
+        top = int(self.blockBoundingGeometry(block).translated(self.contentOffset()).top())
+        bottom = top + int(self.blockBoundingRect(block).height())
+
+        height = self.fontMetrics().height()
+        while block.isValid() and top <= event.rect().bottom():
+            if block.isVisible() and bottom >= event.rect().top():
+                number = str(block_number + 1)
+                painter.setPen(Qt.black)
+                # Use QRect to specify the bounding box for the text
+                rect = QRect(0, top, self.line_number_area.width() - 3, height)
+                painter.drawText(rect, Qt.AlignRight, number)
+
+            block = block.next()
+            top = bottom
+            bottom = top + int(self.blockBoundingRect(block).height())
+            block_number += 1
 
 class GridWidget(QWidget):
     def __init__(self, editor, parent=None):
@@ -145,7 +227,7 @@ class HTMLEditor(QMainWindow):
         super().__init__()
         self.project_path = None
         self.current_file = None
-        self.file_histories = {}
+        self.file_histories = {}  # Now stores plain strings instead of QTextDocument
         self.expanded_state = {}
         self.is_dark_mode = False
         self.main_html_file = None
@@ -254,7 +336,7 @@ class HTMLEditor(QMainWindow):
         # Stacked widget for views
         self.view_stack = QStackedWidget()
         self.design_view = GridWidget(self)
-        self.code_view = QTextEdit()
+        self.code_view = CodeEditor()
         self.code_view.setPlaceholderText("Code View")
         self.code_view.textChanged.connect(self.save_current_file)
 
@@ -310,7 +392,7 @@ class HTMLEditor(QMainWindow):
             QPushButton:hover { 
                 background-color: #5a5a5a; 
             }
-            QTextEdit { 
+            QPlainTextEdit { 
                 background-color: #1e1e1e; 
                 color: #ffffff; 
                 border: 1px solid #555555; 
@@ -433,6 +515,11 @@ class HTMLEditor(QMainWindow):
                 color: #ffffff;
                 border: 1px solid #555555;
             }
+            QWidget#LineNumberArea {
+                background-color: #2b2b2b;
+                color: #ffffff;
+                border-right: 1px solid #555555;
+            }
             """)
         else:
             self.setStyleSheet("""
@@ -462,7 +549,7 @@ class HTMLEditor(QMainWindow):
             QPushButton:hover { 
                 background-color: #c0c0c0; 
             }
-            QTextEdit { 
+            QPlainTextEdit { 
                 background-color: #ffffff; 
                 color: #000000; 
                 border: 1px solid #cccccc; 
@@ -565,6 +652,11 @@ class HTMLEditor(QMainWindow):
                 background-color: #e0e0e0;
                 color: #000000;
                 border: 1px solid #cccccc;
+            }
+            QWidget#LineNumberArea {
+                background-color: #f0f0f0;
+                color: #000000;
+                border-right: 1px solid #cccccc;
             }
             """)
 
@@ -1020,14 +1112,16 @@ class HTMLEditor(QMainWindow):
         if file_path and os.path.isfile(file_path):
             self.current_file = file_path
             if file_path not in self.file_histories:
-                self.file_histories[file_path] = QTextDocument()
                 try:
                     with open(file_path, "r", encoding="utf-8") as f:
-                        self.file_histories[file_path].setPlainText(f.read())
+                        content = f.read()
+                        self.file_histories[file_path] = content
+                        self.code_view.setPlainText(content)
                 except Exception as e:
                     QMessageBox.warning(self, "Errore", f"Impossibile aprire il file: {str(e)}")
                     return
-            self.code_view.setDocument(self.file_histories[file_path])
+            else:
+                self.code_view.setPlainText(self.file_histories[file_path])
             
             # Show/hide design view based on file type
             if file_path.endswith('.html'):
@@ -1049,7 +1143,8 @@ class HTMLEditor(QMainWindow):
 
     def save_current_file(self):
         if self.current_file and os.path.isfile(self.current_file):
-            content = self.file_histories[self.current_file].toPlainText()
+            content = self.code_view.toPlainText()
+            self.file_histories[self.current_file] = content  # Update the history with the current content
             try:
                 with open(self.current_file, "w", encoding="utf-8") as f:
                     f.write(content)
@@ -1078,7 +1173,7 @@ class HTMLEditor(QMainWindow):
                 self.file_histories[new_path] = self.file_histories.pop(old_path)
                 if self.current_file == old_path:
                     self.current_file = new_path
-                    self.code_view.setDocument(self.file_histories[new_path])
+                    self.code_view.setPlainText(self.file_histories[new_path])
             self.update_breadcrumbs(item)
             self.statusBar().showMessage(f"Rinominato: {old_path} -> {new_path}", 2000)
         except PermissionError:
