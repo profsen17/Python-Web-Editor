@@ -6,13 +6,10 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QTextEdit, QTreeWidget,
                             QAction, QMenu, QHBoxLayout, QFileDialog, QMessageBox,
                             QToolBar, QPushButton, QLabel, QInputDialog, QLineEdit,
                             QTabWidget, QGridLayout, QScrollArea, QDialog, QComboBox, QFormLayout, QStackedWidget)
-from PyQt5.QtCore import Qt, QPropertyAnimation, QEasingCurve, QMimeData, QPoint, QSize
-from PyQt5.QtGui import QIcon, QTextDocument, QColor, QDrag, QPainter, QPen, QBrush
-from fuzzywuzzy import fuzz
-
+from PyQt5.QtCore import Qt, QPropertyAnimation, QEasingCurve, QMimeData, QPoint, QSize, QRect, QStringListModel
+from PyQt5.QtGui import QIcon, QTextDocument, QColor, QDrag, QPainter, QPen, QBrush, QPainter, QTextFormat, QSyntaxHighlighter, QTextCharFormat
 from PyQt5.QtWidgets import QTextEdit, QCompleter
-from PyQt5.QtGui import QPainter, QTextFormat, QSyntaxHighlighter, QTextCharFormat
-from PyQt5.QtCore import QRect, QStringListModel
+from fuzzywuzzy import fuzz
 
 class CodeEditor(QTextEdit):
     def __init__(self, parent=None):
