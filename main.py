@@ -5,12 +5,11 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QTextEdit, QTreeWidget,
                             QTreeWidgetItem, QSplitter, QWidget, QVBoxLayout, 
                             QAction, QMenu, QHBoxLayout, QFileDialog, QMessageBox,
                             QToolBar, QPushButton, QLabel, QInputDialog, QLineEdit,
-                            QTabWidget, QGridLayout, QScrollArea, QDialog, QComboBox, QFormLayout, QStackedWidget)
+                            QTabWidget, QGridLayout, QScrollArea, QDialog, QComboBox, QFormLayout)
 from PyQt5.QtCore import Qt, QPropertyAnimation, QEasingCurve, QMimeData, QPoint, QSize
 from PyQt5.QtGui import QIcon, QTextDocument, QColor, QDrag, QPainter, QPen, QBrush
+from PyQt5.QtWidgets import QStackedWidget
 from fuzzywuzzy import fuzz
-
-from CodeEditor import CodeEditor, LineNumberArea, SyntaxHighlighter
 
 class GridWidget(QWidget):
     def __init__(self, editor, parent=None):
@@ -255,10 +254,9 @@ class HTMLEditor(QMainWindow):
         # Stacked widget for views
         self.view_stack = QStackedWidget()
         self.design_view = GridWidget(self)
-        self.code_view = CodeEditor(self)  # Use imported CodeEditor
+        self.code_view = QTextEdit()
         self.code_view.setPlaceholderText("Code View")
         self.code_view.textChanged.connect(self.save_current_file)
-        self.highlighter = SyntaxHighlighter(self.code_view.document())  # Apply syntax highlighter
 
         self.view_stack.addWidget(self.design_view)
         self.view_stack.addWidget(self.code_view)
@@ -280,119 +278,7 @@ class HTMLEditor(QMainWindow):
         self.createMenu()
         self.apply_theme()
         self.show()
-    
-    def switch_to_design(self):
-        if self.current_file and self.current_file.endswith('.html'):
-            self.view_stack.setCurrentWidget(self.design_view)
-            self.design_button.setChecked(True)
-            self.code_button.setChecked(False)
 
-    def switch_to_code(self):
-        self.view_stack.setCurrentWidget(self.code_view)
-        self.code_button.setChecked(True)
-        self.design_button.setChecked(False)
-        
-    def createMenu(self):
-        menubar = self.menuBar()
-        fileMenu = menubar.addMenu('File')
-        
-        newAct = QAction('Nuovo Progetto', self)
-        newAct.setShortcut('Ctrl+N')
-        newAct.triggered.connect(self.newProject)
-        fileMenu.addAction(newAct)
-        
-        openAct = QAction('Apri Progetto', self)
-        openAct.setShortcut('Ctrl+O')
-        openAct.triggered.connect(self.openProject)
-        fileMenu.addAction(openAct)
-        
-        saveAct = QAction('Salva', self)
-        saveAct.setShortcut('Ctrl+S')
-        saveAct.triggered.connect(self.save_current_file)
-        fileMenu.addAction(saveAct)
-
-        # Add New Page action
-        newPageAct = QAction('Nuova Pagina', self)
-        newPageAct.setShortcut('Ctrl+Shift+N')
-        newPageAct.triggered.connect(self.newPage)
-        fileMenu.addAction(newPageAct)
-
-        themeMenu = menubar.addMenu('Theme')
-        lightAct = QAction('Light Mode', self)
-        lightAct.triggered.connect(lambda: self.set_theme(False))
-        themeMenu.addAction(lightAct)
-        
-        darkAct = QAction('Dark Mode', self)
-        darkAct.triggered.connect(lambda: self.set_theme(True))
-        themeMenu.addAction(darkAct)
-    
-    def newPage(self):
-        if not self.project_path:
-            QMessageBox.warning(self, "Errore", "Crea o apri un progetto prima")
-            return
-
-        page_name, ok = QInputDialog.getText(self, "Nuova Pagina", "Inserisci il nome della pagina:", text="NewPage")
-        if not ok or not page_name:
-            QMessageBox.warning(self, "Errore", "Devi inserire un nome per la pagina.")
-            return
-
-        try:
-            # Define folder paths
-            script_folder_path = os.path.join(self.project_path, "Scripts")
-            css_folder_path = os.path.join(script_folder_path, "css")
-            js_folder_path = os.path.join(script_folder_path, "js")
-            html_folder_path = os.path.join(script_folder_path, "html")
-
-            # Ensure folders exist
-            os.makedirs(css_folder_path, exist_ok=True)
-            os.makedirs(js_folder_path, exist_ok=True)
-            os.makedirs(html_folder_path, exist_ok=True)
-
-            # Create files with the page name
-            html_file_path = os.path.join(html_folder_path, f"{page_name}.html")
-            css_file_path = os.path.join(css_folder_path, f"{page_name}.css")
-            js_file_path = os.path.join(js_folder_path, f"{page_name}.js")
-
-            # Write initial content to files
-            with open(html_file_path, "w") as f:
-                f.write(f"<html>\n<head>\n<link rel=\"stylesheet\" href=\"../css/{page_name}.css\">\n<script src=\"../js/{page_name}.js\"></script>\n</head>\n<body>\n</body>\n</html>")
-            with open(css_file_path, "w") as f:
-                f.write(f"/* CSS for {page_name} */\n")
-            with open(js_file_path, "w") as f:
-                f.write(f"// JavaScript for {page_name}\n")
-
-            # Update file tree
-            self.file_tree.clear()
-            self.load_project_structure(self.project_path)
-            self.restore_expanded_state(self.file_tree.topLevelItem(0))
-            
-            # Find and select the new HTML file in the tree
-            html_item = self.find_item_by_path(html_file_path)
-            if html_item:
-                self.file_tree.setCurrentItem(html_item)
-                self.update_breadcrumbs(html_item)
-                self.handle_item_clicked(html_item, 0)
-
-            self.statusBar().showMessage(f'Nuova pagina "{page_name}" creata in {html_folder_path}', 2000)
-
-        except Exception as e:
-            QMessageBox.warning(self, "Errore", f"Errore durante la creazione della pagina: {str(e)}")
-            
-    def find_item_by_path(self, path):
-        def search_tree(item):
-            if item.data(0, Qt.UserRole) == path:
-                return item
-            for i in range(item.childCount()):
-                result = search_tree(item.child(i))
-                if result:
-                    return result
-            return None
-
-        root = self.file_tree.topLevelItem(0)
-        if root:
-            return search_tree(root)
-        return None
-    
     def apply_theme(self):
         if self.is_dark_mode:
             self.setStyleSheet("""
@@ -716,6 +602,12 @@ class HTMLEditor(QMainWindow):
         saveAct.triggered.connect(self.save_current_file)
         fileMenu.addAction(saveAct)
 
+        # Add New Page action
+        newPageAct = QAction('Nuova Pagina', self)
+        newPageAct.setShortcut('Ctrl+Shift+N')
+        newPageAct.triggered.connect(self.newPage)
+        fileMenu.addAction(newPageAct)
+
         themeMenu = menubar.addMenu('Theme')
         lightAct = QAction('Light Mode', self)
         lightAct.triggered.connect(lambda: self.set_theme(False))
@@ -907,7 +799,7 @@ class HTMLEditor(QMainWindow):
             self.search_bar.setVisible(False)
             self.tab_widget.setVisible(False)
             self.right_widget.setVisible(False)
-            
+
     def select_main_files(self):
         dialog = FileSelectionDialog(self.project_path, self)
         if dialog.exec_():
@@ -970,7 +862,7 @@ class HTMLEditor(QMainWindow):
         
         if item:
             if self.is_folder(item):
-                add_file_action = QAction(QIcon("icons/add.png"), "Aggiungi File", self)
+                add_file_action = QAction(QIcon("icons/add_file.png"), "Aggiungi File", self)
                 add_file_action.triggered.connect(lambda: self.addFile(item))
                 menu.addAction(add_file_action)
                 
@@ -982,7 +874,7 @@ class HTMLEditor(QMainWindow):
                 rename_action.triggered.connect(lambda: self.start_rename(item))
                 menu.addAction(rename_action)
                 
-                delete_action = QAction(QIcon("icons/delete.png"), "Elimina", self)
+                delete_action = QAction(QIcon("icons/delete_foler.png"), "Elimina", self)
                 delete_action.triggered.connect(lambda: self.delete_item(item))
                 menu.addAction(delete_action)
             else:
@@ -990,7 +882,7 @@ class HTMLEditor(QMainWindow):
                 rename_action.triggered.connect(lambda: self.start_rename(item))
                 menu.addAction(rename_action)
                 
-                delete_action = QAction(QIcon("icons/delete.png"), "Elimina", self)
+                delete_action = QAction(QIcon("icons/delete_file.png"), "Elimina", self)
                 delete_action.triggered.connect(lambda: self.delete_item(item))
                 menu.addAction(delete_action)
             
@@ -1085,7 +977,7 @@ class HTMLEditor(QMainWindow):
         new_folder.setFlags(new_folder.flags() | Qt.ItemIsEditable)
         self.file_tree.editItem(new_folder, 0)
         self.file_tree.itemChanged.connect(lambda item, column: self.update_file_icon(item) if item == new_folder else None)
-        
+
     def delete_item(self, item):
         item_path = item.data(0, Qt.UserRole)
         if not item_path or not os.path.exists(item_path):
@@ -1154,10 +1046,10 @@ class HTMLEditor(QMainWindow):
 
             self.statusBar().showMessage(f'Aperto: {file_path}', 2000)
         self.update_breadcrumbs(item)
-        
+
     def save_current_file(self):
         if self.current_file and os.path.isfile(self.current_file):
-            content = self.code_view.document().toPlainText()
+            content = self.file_histories[self.current_file].toPlainText()
             try:
                 with open(self.current_file, "w", encoding="utf-8") as f:
                     f.write(content)
@@ -1200,6 +1092,84 @@ class HTMLEditor(QMainWindow):
 
     def closeEvent(self, event):
         super().closeEvent(event)
+
+    def switch_to_design(self):
+        if self.current_file and self.current_file.endswith('.html'):
+            self.view_stack.setCurrentWidget(self.design_view)
+            self.design_button.setChecked(True)
+            self.code_button.setChecked(False)
+
+    def switch_to_code(self):
+        self.view_stack.setCurrentWidget(self.code_view)
+        self.code_button.setChecked(True)
+        self.design_button.setChecked(False)
+
+    def newPage(self):
+        if not self.project_path:
+            QMessageBox.warning(self, "Errore", "Crea o apri un progetto prima")
+            return
+
+        page_name, ok = QInputDialog.getText(self, "Nuova Pagina", "Inserisci il nome della pagina:", text="NewPage")
+        if not ok or not page_name:
+            QMessageBox.warning(self, "Errore", "Devi inserire un nome per la pagina.")
+            return
+
+        try:
+            # Define folder paths
+            script_folder_path = os.path.join(self.project_path, "Scripts")
+            css_folder_path = os.path.join(script_folder_path, "css")
+            js_folder_path = os.path.join(script_folder_path, "js")
+            html_folder_path = os.path.join(script_folder_path, "html")
+
+            # Ensure folders exist
+            os.makedirs(css_folder_path, exist_ok=True)
+            os.makedirs(js_folder_path, exist_ok=True)
+            os.makedirs(html_folder_path, exist_ok=True)
+
+            # Create files with the page name
+            html_file_path = os.path.join(html_folder_path, f"{page_name}.html")
+            css_file_path = os.path.join(css_folder_path, f"{page_name}.css")
+            js_file_path = os.path.join(js_folder_path, f"{page_name}.js")
+
+            # Write initial content to files
+            with open(html_file_path, "w") as f:
+                f.write(f"<html>\n<head>\n<link rel=\"stylesheet\" href=\"../css/{page_name}.css\">\n<script src=\"../js/{page_name}.js\"></script>\n</head>\n<body>\n</body>\n</html>")
+            with open(css_file_path, "w") as f:
+                f.write(f"/* CSS for {page_name} */\n")
+            with open(js_file_path, "w") as f:
+                f.write(f"// JavaScript for {page_name}\n")
+
+            # Update file tree
+            self.file_tree.clear()
+            self.load_project_structure(self.project_path)
+            self.restore_expanded_state(self.file_tree.topLevelItem(0))
+            
+            # Find and select the new HTML file in the tree
+            html_item = self.find_item_by_path(html_file_path)
+            if html_item:
+                self.file_tree.setCurrentItem(html_item)
+                self.update_breadcrumbs(html_item)
+                self.handle_item_clicked(html_item, 0)
+
+            self.statusBar().showMessage(f'Nuova pagina "{page_name}" creata in {html_folder_path}', 2000)
+
+        except Exception as e:
+            QMessageBox.warning(self, "Errore", f"Errore durante la creazione della pagina: {str(e)}")
+
+    def find_item_by_path(self, path):
+        def search_tree(item):
+            if item.data(0, Qt.UserRole) == path:
+                return item
+            for i in range(item.childCount()):
+                result = search_tree(item.child(i))
+                if result:
+                    return result
+            return None
+
+        root = self.file_tree.topLevelItem(0)
+        if root:
+            return search_tree(root)
+        return None
 
 def main():
     app = QApplication(sys.argv)
