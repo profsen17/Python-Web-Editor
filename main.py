@@ -6,10 +6,12 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QPlainTextEdit, QTreeWid
                             QAction, QMenu, QHBoxLayout, QFileDialog, QMessageBox,
                             QToolBar, QPushButton, QLabel, QInputDialog, QLineEdit,
                             QTabWidget, QGridLayout, QScrollArea, QDialog, QComboBox, 
-                            QFormLayout, QStackedWidget, QTextEdit)
-from PyQt5.QtCore import Qt, QPropertyAnimation, QEasingCurve, QMimeData, QPoint, QSize, QRect
-from PyQt5.QtGui import QIcon, QColor, QDrag, QPainter, QPen, QBrush, QFont, QTextFormat, QTextCharFormat
+                            QFormLayout, QStackedWidget, QTextEdit, QShortcut)
+from PyQt5.QtCore import Qt, QPropertyAnimation, QEasingCurve, QMimeData, QPoint, QSize, QRect, QTimer
+from PyQt5.QtGui import QIcon, QColor, QDrag, QPainter, QPen, QBrush, QFont, QTextFormat, QTextCharFormat, QKeySequence, QSyntaxHighlighter
 from fuzzywuzzy import fuzz
+import re
+import ast
 
 class LineNumberArea(QWidget):
     def __init__(self, editor):
@@ -22,15 +24,334 @@ class LineNumberArea(QWidget):
     def paintEvent(self, event):
         self.code_editor.line_number_area_paint_event(event)
 
+class SyntaxHighlighter(QSyntaxHighlighter):
+    def __init__(self, document, file_path=None):
+        super().__init__(document)
+        self.file_path = file_path
+        self.highlighting_rules = []
+        self.error_lines = set()  # Initialize as an empty set
+        self.warning_lines = set() 
+        self.setup_highlighting_rules()
+
+    def setup_highlighting_rules(self):
+        # VS Code Dark+ inspired formats
+        keyword_format = QTextCharFormat()
+        keyword_format.setForeground(QColor("#C678DD"))  # Purple for keywords
+
+        function_format = QTextCharFormat()
+        function_format.setForeground(QColor("#DCDCAA"))  # Light Yellow for functions
+
+        string_format = QTextCharFormat()
+        string_format.setForeground(QColor("#98C379"))  # Green for strings
+
+        comment_format = QTextCharFormat()
+        comment_format.setForeground(QColor("#6A9955"))  # Olive Green for comments
+
+        number_format = QTextCharFormat()
+        number_format.setForeground(QColor("#B5CEA8"))  # Light Green for numbers
+
+        operator_format = QTextCharFormat()
+        operator_format.setForeground(QColor("#D4D4D4"))  # Light Gray for operators
+
+        tag_format = QTextCharFormat()
+        tag_format.setForeground(QColor("#E06C75"))  # Reddish Pink for HTML tags
+        tag_format.setFontWeight(QFont.Bold)
+
+        property_format = QTextCharFormat()
+        property_format.setForeground(QColor("#D19A66"))  # Orange for CSS properties
+
+        error_format = QTextCharFormat()
+        error_format.setUnderlineStyle(QTextCharFormat.SpellCheckUnderline)
+        error_format.setUnderlineColor(QColor("red"))
+
+        warning_format = QTextCharFormat()
+        warning_format.setUnderlineStyle(QTextCharFormat.SpellCheckUnderline)
+        warning_format.setUnderlineColor(QColor("yellow"))
+
+        # Common rules
+        self.highlighting_rules.append((r'"[^"\\]*(\\.[^"\\]*)*"', string_format))
+        self.highlighting_rules.append((r"'[^'\\]*(\\.[^'\\]*)*'", string_format))
+        self.highlighting_rules.append((r'\b\d+\.?\d*\b', number_format))
+        self.highlighting_rules.append((r'[+\-*/=<>!&|%^]+', operator_format))
+
+        # Lists from setup_completer
+        html_tags = [
+            "a", "abbr", "acronym", "address", "applet", "area", "article", "aside", "audio", 
+            "b", "base", "basefont", "bdi", "bdo", "big", "blockquote", "body", "br", "button", 
+            "canvas", "caption", "center", "cite", "code", "col", "colgroup", "command", "content", 
+            "data", "datalist", "dd", "del", "details", "dfn", "dialog", "dir", "div", "dl", "dt", 
+            "em", "embed", "fieldset", "figcaption", "figure", "font", "footer", "form", "frame", 
+            "frameset", "h1", "h2", "h3", "h4", "h5", "h6", "head", "header", "hgroup", "hr", "html", 
+            "i", "iframe", "img", "input", "ins", "isindex", "kbd", "keygen", "label", "legend", 
+            "li", "link", "main", "map", "mark", "marquee", "menu", "menuitem", "meta", "meter", 
+            "nav", "nobr", "noframes", "noscript", "object", "ol", "optgroup", "option", "output", 
+            "p", "param", "picture", "plaintext", "pre", "progress", "q", "rb", "rp", "rt", "rtc", 
+            "ruby", "s", "samp", "script", "section", "select", "shadow", "small", "source", "spacer", 
+            "span", "strike", "strong", "style", "sub", "summary", "sup", "svg", "table", "tbody", 
+            "td", "template", "textarea", "tfoot", "th", "thead", "time", "title", "tr", "track", 
+            "tt", "u", "ul", "var", "video", "wbr", "xmp"
+        ]
+
+        css_properties = [
+            "align-content", "align-items", "align-self", "all", "animation", "animation-delay", 
+            "animation-direction", "animation-duration", "animation-fill-mode", "animation-iteration-count", 
+            "animation-name", "animation-play-state", "animation-timing-function", "appearance", "aspect-ratio", 
+            "backdrop-filter", "backface-visibility", "background", "background-attachment", "background-blend-mode", 
+            "background-clip", "background-color", "background-image", "background-origin", "background-position", 
+            "background-repeat", "background-size", "block-size", "border", "border-block", "border-block-color", 
+            "border-block-end", "border-block-end-color", "border-block-end-style", "border-block-end-width", 
+            "border-block-start", "border-block-start-color", "border-block-start-style", "border-block-start-width", 
+            "border-block-style", "border-block-width", "border-bottom", "border-bottom-color", "border-bottom-left-radius", 
+            "border-bottom-right-radius", "border-bottom-style", "border-bottom-width", "border-collapse", "border-color", 
+            "border-end-end-radius", "border-end-start-radius", "border-image", "border-image-outset", "border-image-repeat", 
+            "border-image-slice", "border-image-source", "border-image-width", "border-inline", "border-inline-color", 
+            "border-inline-end", "border-inline-end-color", "border-inline-end-style", "border-inline-end-width", 
+            "border-inline-start", "border-inline-start-color", "border-inline-start-style", "border-inline-start-width", 
+            "border-inline-style", "border-inline-width", "border-left", "border-left-color", "border-left-style", 
+            "border-left-width", "border-radius", "border-right", "border-right-color", "border-right-style", "border-right-width", 
+            "border-spacing", "border-start-end-radius", "border-start-start-radius", "border-style", "border-top", 
+            "border-top-color", "border-top-left-radius", "border-top-right-radius", "border-top-style", "border-top-width", 
+            "border-width", "bottom", "box-decoration-break", "box-shadow", "box-sizing", "break-after", "break-before", 
+            "break-inside", "caption-side", "caret-color", "clear", "clip", "clip-path", "color", "column-count", "column-fill", 
+            "column-gap", "column-rule", "column-rule-color", "column-rule-style", "column-rule-width", "column-span", 
+            "column-width", "columns", "contain", "content", "content-visibility", "counter-increment", "counter-reset", 
+            "counter-set", "cursor", "direction", "display", "empty-cells", "filter", "flex", "flex-basis", "flex-direction", 
+            "flex-flow", "flex-grow", "flex-shrink", "flex-wrap", "float", "font", "font-display", "font-family", "font-feature-settings", 
+            "font-kerning", "font-optical-sizing", "font-size", "font-size-adjust", "font-stretch", "font-style", "font-synthesis", 
+            "font-variant", "font-variant-alternates", "font-variant-caps", "font-variant-east-asian", "font-variant-ligatures", 
+            "font-variant-numeric", "font-variant-position", "font-variation-settings", "font-weight", "gap", "grid", 
+            "grid-area", "grid-auto-columns", "grid-auto-flow", "grid-auto-rows", "grid-column", "grid-column-end", 
+            "grid-column-gap", "grid-column-start", "grid-gap", "grid-row", "grid-row-end", "grid-row-gap", "grid-row-start", 
+            "grid-template", "grid-template-areas", "grid-template-columns", "grid-template-rows", "hanging-punctuation", 
+            "height", "hyphens", "image-orientation", "image-rendering", "inline-size", "inset", "inset-block", "inset-block-end", 
+            "inset-block-start", "inset-inline", "inset-inline-end", "inset-inline-start", "isolation", "justify-content", 
+            "justify-items", "justify-self", "left", "letter-spacing", "line-break", "line-height", "list-style", "list-style-image", 
+            "list-style-position", "list-style-type", "margin", "margin-block", "margin-block-end", "margin-block-start", 
+            "margin-bottom", "margin-inline", "margin-inline-end", "margin-inline-start", "margin-left", "margin-right", 
+            "margin-top", "mask", "mask-border", "mask-border-mode", "mask-border-outset", "mask-border-repeat", 
+            "mask-border-slice", "mask-border-source", "mask-border-width", "mask-clip", "mask-composite", "mask-image", 
+            "mask-mode", "mask-origin", "mask-position", "mask-repeat", "mask-size", "mask-type", "max-block-size", 
+            "max-height", "max-inline-size", "max-width", "min-block-size", "min-height", "min-inline-size", "min-width", 
+            "mix-blend-mode", "object-fit", "object-position", "offset", "offset-anchor", "offset-distance", "offset-path", 
+            "offset-position", "offset-rotate", "opacity", "order", "orphans", "outline", "outline-color", "outline-offset", 
+            "outline-style", "outline-width", "overflow", "overflow-anchor", "overflow-block", "overflow-clip-box", 
+            "overflow-inline", "overflow-wrap", "overflow-x", "overflow-y", "overscroll-behavior", "overscroll-behavior-block", 
+            "overscroll-behavior-inline", "overscroll-behavior-x", "overscroll-behavior-y", "padding", "padding-block", 
+            "padding-block-end", "padding-block-start", "padding-bottom", "padding-inline", "padding-inline-end", 
+            "padding-inline-start", "padding-left", "padding-right", "padding-top", "page-break-after", "page-break-before", 
+            "page-break-inside", "paint-order", "perspective", "perspective-origin", "place-content", "place-items", 
+            "place-self", "pointer-events", "position", "quotes", "resize", "right", "rotate", "row-gap", "scale", 
+            "scroll-behavior", "scroll-margin", "scroll-margin-block", "scroll-margin-block-end", "scroll-margin-block-start", 
+            "scroll-margin-bottom", "scroll-margin-inline", "scroll-margin-inline-end", "scroll-margin-inline-start", 
+            "scroll-margin-left", "scroll-margin-right", "scroll-margin-top", "scroll-padding", "scroll-padding-block", 
+            "scroll-padding-block-end", "scroll-padding-block-start", "scroll-padding-bottom", "scroll-padding-inline", 
+            "scroll-padding-inline-end", "scroll-padding-inline-start", "scroll-padding-left", "scroll-padding-right", 
+            "scroll-padding-top", "scroll-snap-align", "scroll-snap-stop", "scroll-snap-type", "scrollbar-color", 
+            "scrollbar-gutter", "scrollbar-width", "shape-image-threshold", "shape-margin", "shape-outside", "tab-size", 
+            "table-layout", "text-align", "text-align-last", "text-combine-upright", "text-decoration", "text-decoration-color", 
+            "text-decoration-line", "text-decoration-style", "text-decoration-thickness", "text-emphasis", "text-emphasis-color", 
+            "text-emphasis-position", "text-emphasis-style", "text-indent", "text-justify", "text-orientation", 
+            "text-overflow", "text-rendering", "text-shadow", "text-transform", "text-underline-offset", "text-underline-position", 
+            "top", "touch-action", "transform", "transform-box", "transform-origin", "transform-style", "transition", 
+            "transition-delay", "transition-duration", "transition-property", "transition-timing-function", "unicode-bidi", 
+            "user-select", "vertical-align", "visibility", "white-space", "width", "will-change", "word-break", 
+            "word-spacing", "word-wrap", "writing-mode", "z-index", "zoom"
+        ]
+
+        js_keywords = [
+            "break", "case", "catch", "class", "const", "continue", "debugger", "default", "delete", "do",
+            "else", "enum", "export", "extends", "false", "finally", "for", "function", "if", "import", "in",
+            "instanceof", "let", "new", "null", "return", "super", "switch", "this", "throw", "true", "try",
+            "typeof", "var", "void", "while", "with", "yield"
+        ]
+
+        js_functions = [
+            "console.log", "console.error", "console.warn", "console.info", "console.debug", "console.clear",
+            "console.table", "console.time", "console.timeEnd", "console.count", "console.group",
+            "console.groupEnd", "console.trace",
+            "document.getElementById", "document.getElementsByClassName", "document.getElementsByTagName",
+            "document.querySelector", "document.querySelectorAll", "document.createElement",
+            "document.createTextNode", "document.appendChild", "document.removeChild",
+            "document.replaceChild", "document.write", "document.execCommand",
+            "addEventListener", "removeEventListener", "dispatchEvent",
+            "alert", "confirm", "prompt", "setTimeout", "setInterval", "clearTimeout", "clearInterval",
+            "requestAnimationFrame", "cancelAnimationFrame", "scrollTo", "scrollBy",
+            "Math.abs", "Math.ceil", "Math.floor", "Math.round", "Math.max", "Math.min",
+            "Math.pow", "Math.sqrt", "Math.random", "Math.sin", "Math.cos", "Math.tan",
+            "Math.log", "Math.exp",
+            "String.fromCharCode", "String.fromCodePoint", "String.prototype.charAt",
+            "String.prototype.charCodeAt", "String.prototype.codePointAt",
+            "String.prototype.concat", "String.prototype.includes", "String.prototype.indexOf",
+            "String.prototype.lastIndexOf", "String.prototype.match", "String.prototype.replace",
+            "String.prototype.search", "String.prototype.slice", "String.prototype.split",
+            "String.prototype.startsWith", "String.prototype.endsWith", "String.prototype.substring",
+            "String.prototype.toLowerCase", "String.prototype.toUpperCase", "String.prototype.trim",
+            "Array.isArray", "Array.from", "Array.of", "Array.prototype.concat",
+            "Array.prototype.every", "Array.prototype.filter", "Array.prototype.find",
+            "Array.prototype.findIndex", "Array.prototype.forEach", "Array.prototype.includes",
+            "Array.prototype.indexOf", "Array.prototype.join", "Array.prototype.map",
+            "Array.prototype.pop", "Array.prototype.push", "Array.prototype.reduce",
+            "Array.prototype.reduceRight", "Array.prototype.reverse", "Array.prototype.shift",
+            "Array.prototype.slice", "Array.prototype.some", "Array.prototype.sort",
+            "Array.prototype.splice", "Array.prototype.unshift",
+            "Object.assign", "Object.create", "Object.defineProperty", "Object.defineProperties",
+            "Object.entries", "Object.freeze", "Object.fromEntries", "Object.getOwnPropertyDescriptor",
+            "Object.getOwnPropertyDescriptors", "Object.getOwnPropertyNames", "Object.getOwnPropertySymbols",
+            "Object.getPrototypeOf", "Object.is", "Object.isExtensible", "Object.isFrozen",
+            "Object.isSealed", "Object.keys", "Object.preventExtensions", "Object.seal", "Object.setPrototypeOf",
+            "Object.values",
+            "JSON.parse", "JSON.stringify",
+            "Date.now", "Date.parse", "Promise", "Promise.resolve", "Promise.reject", "Promise.all", "Promise.race",
+            "Promise.allSettled", "Promise.any", "async", "await",
+            "fetch", "XMLHttpRequest",
+            "localStorage.setItem", "localStorage.getItem", "localStorage.removeItem", "localStorage.clear",
+            "sessionStorage.setItem", "sessionStorage.getItem", "sessionStorage.removeItem", "sessionStorage.clear",
+            "navigator.geolocation.getCurrentPosition", "navigator.geolocation.watchPosition",
+            "navigator.geolocation.clearWatch", "navigator.clipboard.writeText", "navigator.clipboard.readText",
+            "Worker", "WebSocket",
+            "try", "catch", "finally", "throw", "Error", "TypeError", "SyntaxError", "ReferenceError", "RangeError",
+            "setImmediate", "clearImmediate", "queueMicrotask", "structuredClone"
+        ]
+
+        # Common rules across all file types
+        self.highlighting_rules.append((r'"[^"\\]*(\\.[^"\\]*)*"', string_format))  # Double-quoted strings
+        self.highlighting_rules.append((r"'[^'\\]*(\\.[^'\\]*)*'", string_format))  # Single-quoted strings
+        self.highlighting_rules.append((r'\b\d+\.?\d*\b', number_format))  # Numbers (e.g., 123, 12.34)
+        self.highlighting_rules.append((r'[+\-*/=<>!&|%^]+', operator_format))  # Operators
+
+        if self.file_path:
+            if self.file_path.endswith('.html'):
+                for tag in html_tags:
+                    self.highlighting_rules.append((fr'<\s*{tag}\b|<\s*/\s*{tag}\b', tag_format))
+                self.highlighting_rules.append((r'<!--[\s\S]*?-->', comment_format))
+
+            elif self.file_path.endswith('.css'):
+                for prop in css_properties:
+                    self.highlighting_rules.append((fr'\b{prop}\b', property_format))
+                self.highlighting_rules.append((r'/\*[\s\S]*?\*/', comment_format))
+                self.highlighting_rules.append((r'//.*$', comment_format))
+
+            elif self.file_path.endswith('.js'):
+                for keyword in js_keywords:
+                    self.highlighting_rules.append((fr'\b{keyword}\b', keyword_format))
+                for func in js_functions:
+                    self.highlighting_rules.append((fr'\b{func}\b', function_format))
+                self.highlighting_rules.append((r'//.*$', comment_format))
+                self.highlighting_rules.append((r'/\*[\s\S]*?\*/', comment_format))
+
+        # Placeholder for error/warning rules (updated in analyze_code)
+        self.error_format = error_format
+        self.warning_format = warning_format
+
+    def analyze_code(self):
+        self.error_lines.clear()
+        self.warning_lines.clear()
+        text = self.document().toPlainText()
+        lines = text.split('\n')
+
+        if self.file_path:
+            if self.file_path.endswith('.js'):
+                # Basic JS error checking (simplified)
+                try:
+                    # Use ast for a rough JS-like syntax check (Python syntax as proxy)
+                    ast.parse(text.replace('let', '').replace('const', ''))  # Rough approximation
+                except SyntaxError as e:
+                    if hasattr(e, 'lineno'):
+                        self.error_lines.add(e.lineno - 1)  # 0-based index
+
+                # Check for unused variables (basic)
+                defined_vars = set()
+                used_vars = set()
+                for i, line in enumerate(lines):
+                    line = line.strip()
+                    if 'let ' in line or 'const ' in line:
+                        match = re.search(r'(let|const)\s+(\w+)', line)
+                        if match:
+                            defined_vars.add(match.group(2))
+                    for var in defined_vars:
+                        if var in line and not line.startswith(('let', 'const')):
+                            used_vars.add(var)
+                    if '{' in line and '}' not in line:
+                        self.error_lines.add(i)  # Unclosed bracket
+                    if '}' in line and '{' not in line and i not in self.error_lines:
+                        self.error_lines.add(i)  # Unmatched closing bracket
+
+                unused_vars = defined_vars - used_vars
+                for i, line in enumerate(lines):
+                    for var in unused_vars:
+                        if var in line and ('let' in line or 'const' in line):
+                            self.warning_lines.add(i)
+
+            elif self.file_path.endswith('.html'):
+                # Check for unclosed tags (basic)
+                stack = []
+                for i, line in enumerate(lines):
+                    tags = re.findall(r'</?(\w+)', line)
+                    for tag in tags:
+                        if line.strip().startswith(f'<{tag}'):
+                            stack.append(tag)
+                        elif line.strip().startswith(f'</{tag}'):
+                            if not stack or stack[-1] != tag:
+                                self.error_lines.add(i)
+                            else:
+                                stack.pop()
+                if stack:  # Unclosed tags
+                    self.error_lines.add(len(lines) - 1)
+
+            elif self.file_path.endswith('.css'):
+                # Check for missing semicolons (basic)
+                for i, line in enumerate(lines):
+                    line = line.strip()
+                    if line and not line.endswith(';') and not line.endswith('{') and not line.endswith('}'):
+                        self.error_lines.add(i)
+
+    def highlightBlock(self, text):
+        for pattern, format in self.highlighting_rules:
+            for match in re.finditer(pattern, text):
+                start, end = match.start(), match.end()
+                self.setFormat(start, end - start, format)
+
+        # Apply error/warning underlines
+        line_number = self.currentBlock().blockNumber()
+        if line_number in self.error_lines: #THIS LINE
+            self.setFormat(0, len(text), self.error_format)
+        elif line_number in self.warning_lines:
+            self.setFormat(0, len(text), self.warning_format)
+
+class LineNumberArea(QWidget):
+    def __init__(self, editor):
+        super().__init__(editor)
+        self.editor = editor
+
+    def sizeHint(self):
+        return QSize(self.editor.line_number_area_width(), 0)
+
+    def paintEvent(self, event):
+        self.editor.lineNumberAreaPaintEvent(event)
+
 class CodeEditor(QPlainTextEdit):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.setUndoRedoEnabled(True)
+        self.shortcut_undo = QShortcut(QKeySequence("Ctrl+Z"), self)
+        self.shortcut_undo.activated.connect(self.undo)
+        self.shortcut_redo = QShortcut(QKeySequence("Ctrl+Y"), self)
+        self.shortcut_redo.activated.connect(self.redo)
         self.setFont(QFont("Courier", 10))  # Use a monospaced font for better alignment
         self.line_number_area = LineNumberArea(self)
         self.blockCountChanged.connect(self.update_line_number_area_width)
         self.updateRequest.connect(self.update_line_number_area)
         self.cursorPositionChanged.connect(self.highlight_current_line)
         self.update_line_number_area_width(0)
+        
+        self.parent_editor = None
+        self.last_content = self.toPlainText()
+        self.last_cursor_pos = self.textCursor().position()
+        self.change_timer = QTimer(self)
+        self.change_timer.setSingleShot(True)
+        self.change_timer.timeout.connect(self.commit_change)
+        self.textChanged.connect(self.on_text_changed)
+        self.highlighter = None
 
     def line_number_area_width(self):
         digits = 1
@@ -62,8 +383,6 @@ class CodeEditor(QPlainTextEdit):
         if not self.isReadOnly():
             # Create an extra selection for the current line
             selection = QTextEdit.ExtraSelection()
-            line_color = QColor(Qt.yellow).lighter(160)
-            selection.format.setBackground(line_color)
             selection.format.setProperty(QTextFormat.FullWidthSelection, True)
             selection.cursor = self.textCursor()
             selection.cursor.clearSelection()
@@ -92,6 +411,123 @@ class CodeEditor(QPlainTextEdit):
             top = bottom
             bottom = top + int(self.blockBoundingRect(block).height())
             block_number += 1
+
+    def set_file_type(self, file_path):
+        self.highlighter = SyntaxHighlighter(self.document(), file_path)
+        self.highlighter.rehighlight()
+        self.viewport().update() 
+
+    def on_text_changed(self):
+        if not self.change_timer.isActive():
+            self.last_content = self.toPlainText()
+            self.last_cursor_pos = self.textCursor().position()
+        self.change_timer.start(100)
+        if self.highlighter:
+            self.highlighter.analyze_code()  # Re-analyze on change
+            self.highlighter.rehighlight()
+            self.line_number_area.update()  # Update line numbers
+            self.viewport().update()  # Update dots
+    
+    def commit_change(self):
+        current_content = self.toPlainText()
+        if current_content != self.last_content and hasattr(self, 'parent_editor') and self.parent_editor.current_file:
+            history_entry = self.parent_editor.file_histories[self.parent_editor.current_file]
+            history = history_entry["history"]
+            current_index = history_entry["current_index"]
+
+            if current_index < len(history) - 1:
+                history[current_index + 1:] = []
+            
+            history.append({"content": current_content, "cursor_pos": self.textCursor().position()})
+            history_entry["current_index"] = len(history) - 1
+
+            if len(history) > history_entry["max_size"]:
+                history.pop(0)
+                history_entry["current_index"] -= 1
+
+            self.last_content = current_content
+            self.last_cursor_pos = self.textCursor().position()
+
+    def line_number_area_width(self):
+        digits = 1
+        max_num = max(1, self.blockCount())
+        while max_num >= 10:
+            max_num //= 10
+            digits += 1
+        space = 3 + self.fontMetrics().horizontalAdvance('9') * digits
+        return space
+
+    def update_line_number_area_width(self, _):
+        self.setViewportMargins(self.line_number_area_width(), 0, 0, 20)  # Extra space for dots
+
+    def update_line_number_area(self, rect, dy):
+        if dy:
+            self.line_number_area.scroll(0, dy)
+        else:
+            self.line_number_area.update(0, rect.y(), self.line_number_area.width(), rect.height())
+        if rect.contains(self.viewport().rect()):
+            self.update_line_number_area_width(0)
+
+    def lineNumberAreaPaintEvent(self, event):
+        painter = QPainter(self.line_number_area)
+        painter.fillRect(event.rect(), Qt.lightGray)
+        block = self.firstVisibleBlock()
+        block_number = block.blockNumber()
+        top = int(self.blockBoundingGeometry(block).translated(self.contentOffset()).top())
+        bottom = top + int(self.blockBoundingRect(block).height())
+
+        while block.isValid() and top <= event.rect().bottom():
+            if block.isVisible() and bottom >= event.rect().top():
+                number = str(block_number + 1)
+                if self.highlighter and block_number in self.highlighter.error_lines:
+                    painter.setPen(QColor("red"))
+                elif self.highlighter and block_number in self.highlighter.warning_lines:
+                    painter.setPen(QColor("yellow"))
+                else:
+                    painter.setPen(Qt.black)
+                painter.drawText(0, top, self.line_number_area.width(), self.fontMetrics().height(),
+                                 Qt.AlignRight, number)
+            block = block.next()
+            top = bottom
+            bottom = top + int(self.blockBoundingRect(block).height())
+            block_number += 1
+
+    def paintEvent(self, event):
+        super().paintEvent(event)
+        if not self.highlighter:
+            return
+
+        # Draw error/warning dots at the bottom
+        painter = QPainter(self.viewport())
+        height = self.viewport().height()
+        width = self.viewport().width()
+        total_lines = self.blockCount()
+
+        for line in self.highlighter.error_lines:
+            y = int((line / total_lines) * (height - 20)) + height - 10
+            painter.setPen(QColor("red"))
+            painter.drawEllipse(QRect(width - 10, y, 5, 5))
+
+        for line in self.highlighter.warning_lines:
+            y = int((line / total_lines) * (height - 20)) + height - 10
+            painter.setPen(QColor("yellow"))
+            painter.drawEllipse(QRect(width - 10, y, 5, 5))
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Z and event.modifiers() & Qt.ControlModifier:
+            self.undo_action()
+        elif event.key() == Qt.Key_Y and event.modifiers() & Qt.ControlModifier:
+            self.redo_action()
+        else:
+            super().keyPressEvent(event)
+
+    def undo_action(self):
+        if hasattr(self, 'parent_editor') and self.parent_editor.current_file:
+            self.parent_editor.undo()
+    
+    def redo_action(self):
+        if hasattr(self, 'parent_editor') and self.parent_editor.current_file:
+            self.parent_editor.redo()
 
 class GridWidget(QWidget):
     def __init__(self, editor, parent=None):
@@ -227,7 +663,7 @@ class HTMLEditor(QMainWindow):
         super().__init__()
         self.project_path = None
         self.current_file = None
-        self.file_histories = {}  # Now stores plain strings instead of QTextDocument
+        self.file_histories = {}  # {file_path: {"history": [{"content": str, "cursor_pos": int}], "current_index": int, "max_size": int}}
         self.expanded_state = {}
         self.is_dark_mode = False
         self.main_html_file = None
@@ -338,7 +774,19 @@ class HTMLEditor(QMainWindow):
         self.design_view = GridWidget(self)
         self.code_view = CodeEditor()
         self.code_view.setPlaceholderText("Code View")
+        self.code_view.parent_editor = self  # Link to HTMLEditor
         self.code_view.textChanged.connect(self.save_current_file)
+
+        editMenu = self.menuBar().addMenu('Edit')
+        undoAct = QAction('Undo', self)
+        undoAct.setShortcut('Ctrl+Z')
+        undoAct.triggered.connect(self.undo)
+        editMenu.addAction(undoAct)
+
+        redoAct = QAction('Redo', self)
+        redoAct.setShortcut('Ctrl+Y')
+        redoAct.triggered.connect(self.redo)
+        editMenu.addAction(redoAct)
 
         self.view_stack.addWidget(self.design_view)
         self.view_stack.addWidget(self.code_view)
@@ -847,7 +1295,7 @@ class HTMLEditor(QMainWindow):
             os.makedirs(html_folder_path, exist_ok=True)
             index_file_path = os.path.join(html_folder_path, "index.html")
             with open(index_file_path, "w") as f:
-                f.write("<html>\n<head>\n</head>\n<body>\n</body>\n</html>")
+                f.write("<html>\n<head>\n<link rel='stylesheet' type='text/css' href='style.css'>\n<script src='script.js'></script>\n</head>\n<body>\n</body>\n</html>")  
 
             assets_folder_path = os.path.join(self.project_path, "Assets")
             os.makedirs(assets_folder_path, exist_ok=True)
@@ -1115,25 +1563,41 @@ class HTMLEditor(QMainWindow):
                 try:
                     with open(file_path, "r", encoding="utf-8") as f:
                         content = f.read()
-                        self.file_histories[file_path] = content
-                        self.code_view.setPlainText(content)
+                        self.file_histories[file_path] = {
+                            "history": [{"content": content, "cursor_pos": 0}],
+                            "current_index": 0,
+                            "max_size": 100
+                        }
+                    self.code_view.setPlainText(content)
+                    self.code_view.last_content = content
+                    self.code_view.last_cursor_pos = 0
+                    cursor = self.code_view.textCursor()
+                    cursor.setPosition(0)
+                    self.code_view.setTextCursor(cursor)
                 except Exception as e:
                     QMessageBox.warning(self, "Errore", f"Impossibile aprire il file: {str(e)}")
                     return
             else:
-                self.code_view.setPlainText(self.file_histories[file_path])
-            
-            # Show/hide design view based on file type
+                history_entry = self.file_histories[file_path]
+                current_state = history_entry["history"][history_entry["current_index"]]
+                self.code_view.setPlainText(current_state["content"])
+                self.code_view.last_content = current_state["content"]
+                self.code_view.last_cursor_pos = current_state["cursor_pos"]
+                cursor = self.code_view.textCursor()
+                cursor.setPosition(current_state["cursor_pos"])
+                self.code_view.setTextCursor(cursor)
+
+            # Set syntax highlighting based on file type
+            self.code_view.set_file_type(file_path)
+
             if file_path.endswith('.html'):
                 self.design_button.setVisible(True)
                 self.code_button.setVisible(True)
-                # If design view was last selected, switch to it; otherwise, stay in code view
                 if self.design_button.isChecked():
                     self.switch_to_design()
                 else:
                     self.switch_to_code()
             else:
-                # For non-HTML files (e.g., CSS, JS), show only code view
                 self.design_button.setVisible(False)
                 self.code_button.setVisible(True)
                 self.switch_to_code()
@@ -1144,13 +1608,40 @@ class HTMLEditor(QMainWindow):
     def save_current_file(self):
         if self.current_file and os.path.isfile(self.current_file):
             content = self.code_view.toPlainText()
-            self.file_histories[self.current_file] = content  # Update the history with the current content
             try:
                 with open(self.current_file, "w", encoding="utf-8") as f:
                     f.write(content)
                 self.statusBar().showMessage(f'Salvato: {self.current_file}', 1000)
             except Exception as e:
                 QMessageBox.warning(self, "Errore", f"Impossibile salvare il file: {str(e)}")
+
+    def undo(self):
+        if self.current_file and self.current_file in self.file_histories:
+            history_entry = self.file_histories[self.current_file]
+            if history_entry["current_index"] > 0:
+                history_entry["current_index"] -= 1
+                state = history_entry["history"][history_entry["current_index"]]
+                self.code_view.setPlainText(state["content"])
+                self.code_view.last_content = state["content"]
+                self.code_view.last_cursor_pos = state["cursor_pos"]
+                cursor = self.code_view.textCursor()
+                cursor.setPosition(state["cursor_pos"])
+                self.code_view.setTextCursor(cursor)
+                self.statusBar().showMessage(f'Undo: {self.current_file}', 1000)
+
+    def redo(self):
+        if self.current_file and self.current_file in self.file_histories:
+            history_entry = self.file_histories[self.current_file]
+            if history_entry["current_index"] < len(history_entry["history"]) - 1:
+                history_entry["current_index"] += 1
+                state = history_entry["history"][history_entry["current_index"]]
+                self.code_view.setPlainText(state["content"])
+                self.code_view.last_content = state["content"]
+                self.code_view.last_cursor_pos = state["cursor_pos"]
+                cursor = self.code_view.textCursor()
+                cursor.setPosition(state["cursor_pos"])
+                self.code_view.setTextCursor(cursor)
+                self.statusBar().showMessage(f'Redo: {self.current_file}', 1000)
 
     def rename_item(self, item, column):
         if not self.project_path:
@@ -1173,7 +1664,7 @@ class HTMLEditor(QMainWindow):
                 self.file_histories[new_path] = self.file_histories.pop(old_path)
                 if self.current_file == old_path:
                     self.current_file = new_path
-                    self.code_view.setPlainText(self.file_histories[new_path])
+                    self.code_view.setPlainText(self.file_histories[new_path]["history"][self.file_histories[new_path]["current_index"]])
             self.update_breadcrumbs(item)
             self.statusBar().showMessage(f"Rinominato: {old_path} -> {new_path}", 2000)
         except PermissionError:
