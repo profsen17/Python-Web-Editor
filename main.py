@@ -970,7 +970,7 @@ class HTMLEditor(QMainWindow):
         
         if item:
             if self.is_folder(item):
-                add_file_action = QAction(QIcon("icons/add_file.png"), "Aggiungi File", self)
+                add_file_action = QAction(QIcon("icons/add.png"), "Aggiungi File", self)
                 add_file_action.triggered.connect(lambda: self.addFile(item))
                 menu.addAction(add_file_action)
                 
@@ -982,7 +982,7 @@ class HTMLEditor(QMainWindow):
                 rename_action.triggered.connect(lambda: self.start_rename(item))
                 menu.addAction(rename_action)
                 
-                delete_action = QAction(QIcon("icons/delete_foler.png"), "Elimina", self)
+                delete_action = QAction(QIcon("icons/delete.png"), "Elimina", self)
                 delete_action.triggered.connect(lambda: self.delete_item(item))
                 menu.addAction(delete_action)
             else:
@@ -990,7 +990,7 @@ class HTMLEditor(QMainWindow):
                 rename_action.triggered.connect(lambda: self.start_rename(item))
                 menu.addAction(rename_action)
                 
-                delete_action = QAction(QIcon("icons/delete_file.png"), "Elimina", self)
+                delete_action = QAction(QIcon("icons/delete.png"), "Elimina", self)
                 delete_action.triggered.connect(lambda: self.delete_item(item))
                 menu.addAction(delete_action)
             
