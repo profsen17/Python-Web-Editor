@@ -29,9 +29,10 @@ class SyntaxHighlighter(QSyntaxHighlighter):
         super().__init__(document)
         self.file_path = file_path
         self.highlighting_rules = []
-        self.error_lines = set()  # Initialize as an empty set
-        self.warning_lines = set() 
+        self.error_lines = set()
+        self.warning_lines = set()
         self.setup_highlighting_rules()
+        self.analyze_code()  # Add this line
 
     def setup_highlighting_rules(self):
         # VS Code Dark+ inspired formats
@@ -337,13 +338,13 @@ class CodeEditor(QPlainTextEdit):
         self.shortcut_undo.activated.connect(self.undo)
         self.shortcut_redo = QShortcut(QKeySequence("Ctrl+Y"), self)
         self.shortcut_redo.activated.connect(self.redo)
-        self.setFont(QFont("Courier", 10))  # Use a monospaced font for better alignment
+        self.setFont(QFont("Courier", 10))
         self.line_number_area = LineNumberArea(self)
         self.blockCountChanged.connect(self.update_line_number_area_width)
         self.updateRequest.connect(self.update_line_number_area)
         self.cursorPositionChanged.connect(self.highlight_current_line)
         self.update_line_number_area_width(0)
-        
+    
         self.parent_editor = None
         self.last_content = self.toPlainText()
         self.last_cursor_pos = self.textCursor().position()
@@ -389,24 +390,25 @@ class CodeEditor(QPlainTextEdit):
             extra_selections.append(selection)
         self.setExtraSelections(extra_selections)
 
-    def line_number_area_paint_event(self, event):
+    def lineNumberAreaPaintEvent(self, event):
         painter = QPainter(self.line_number_area)
         painter.fillRect(event.rect(), Qt.lightGray)
-
         block = self.firstVisibleBlock()
         block_number = block.blockNumber()
         top = int(self.blockBoundingGeometry(block).translated(self.contentOffset()).top())
         bottom = top + int(self.blockBoundingRect(block).height())
 
-        height = self.fontMetrics().height()
         while block.isValid() and top <= event.rect().bottom():
             if block.isVisible() and bottom >= event.rect().top():
                 number = str(block_number + 1)
-                painter.setPen(Qt.black)
-                # Use QRect to specify the bounding box for the text
-                rect = QRect(0, top, self.line_number_area.width() - 3, height)
-                painter.drawText(rect, Qt.AlignRight, number)
-
+                if self.highlighter and block_number in self.highlighter.error_lines:
+                    painter.setPen(QColor("red"))
+                elif self.highlighter and block_number in self.highlighter.warning_lines:
+                    painter.setPen(QColor("yellow"))
+                else:
+                    painter.setPen(Qt.black)
+                painter.drawText(0, top, self.line_number_area.width(), self.fontMetrics().height(),
+                                Qt.AlignRight, number)
             block = block.next()
             top = bottom
             bottom = top + int(self.blockBoundingRect(block).height())
@@ -448,49 +450,49 @@ class CodeEditor(QPlainTextEdit):
             self.last_content = current_content
             self.last_cursor_pos = self.textCursor().position()
 
-    def line_number_area_width(self):
-        digits = 1
-        max_num = max(1, self.blockCount())
-        while max_num >= 10:
-            max_num //= 10
-            digits += 1
-        space = 3 + self.fontMetrics().horizontalAdvance('9') * digits
-        return space
+    #def line_number_area_width(self):
+    #    digits = 1
+    #    max_num = max(1, self.blockCount())
+    #    while max_num >= 10:
+    #        max_num //= 10
+    #        digits += 1
+    #    space = 3 + self.fontMetrics().horizontalAdvance('9') * digits
+    #    return space
 
-    def update_line_number_area_width(self, _):
-        self.setViewportMargins(self.line_number_area_width(), 0, 0, 20)  # Extra space for dots
+    #def update_line_number_area_width(self, _):
+    #    self.setViewportMargins(self.line_number_area_width(), 0, 0, 20)  # Extra space for dots
 
-    def update_line_number_area(self, rect, dy):
-        if dy:
-            self.line_number_area.scroll(0, dy)
-        else:
-            self.line_number_area.update(0, rect.y(), self.line_number_area.width(), rect.height())
-        if rect.contains(self.viewport().rect()):
-            self.update_line_number_area_width(0)
+    #def update_line_number_area(self, rect, dy):
+    #    if dy:
+    #        self.line_number_area.scroll(0, dy)
+    #    else:
+    #        self.line_number_area.update(0, rect.y(), self.line_number_area.width(), rect.height())
+    #    if rect.contains(self.viewport().rect()):
+    #        self.update_line_number_area_width(0)
 
-    def lineNumberAreaPaintEvent(self, event):
-        painter = QPainter(self.line_number_area)
-        painter.fillRect(event.rect(), Qt.lightGray)
-        block = self.firstVisibleBlock()
-        block_number = block.blockNumber()
-        top = int(self.blockBoundingGeometry(block).translated(self.contentOffset()).top())
-        bottom = top + int(self.blockBoundingRect(block).height())
+    #def lineNumberAreaPaintEvent(self, event):
+    #    painter = QPainter(self.line_number_area)
+    #    painter.fillRect(event.rect(), Qt.lightGray)
+    #    block = self.firstVisibleBlock()
+    #    block_number = block.blockNumber()
+    #    top = int(self.blockBoundingGeometry(block).translated(self.contentOffset()).top())
+    #    bottom = top + int(self.blockBoundingRect(block).height())
 
-        while block.isValid() and top <= event.rect().bottom():
-            if block.isVisible() and bottom >= event.rect().top():
-                number = str(block_number + 1)
-                if self.highlighter and block_number in self.highlighter.error_lines:
-                    painter.setPen(QColor("red"))
-                elif self.highlighter and block_number in self.highlighter.warning_lines:
-                    painter.setPen(QColor("yellow"))
-                else:
-                    painter.setPen(Qt.black)
-                painter.drawText(0, top, self.line_number_area.width(), self.fontMetrics().height(),
-                                 Qt.AlignRight, number)
-            block = block.next()
-            top = bottom
-            bottom = top + int(self.blockBoundingRect(block).height())
-            block_number += 1
+    #    while block.isValid() and top <= event.rect().bottom():
+    #        if block.isVisible() and bottom >= event.rect().top():
+    #            number = str(block_number + 1)
+    #            if self.highlighter and block_number in self.highlighter.error_lines:
+    #                painter.setPen(QColor("red"))
+    #            elif self.highlighter and block_number in self.highlighter.warning_lines:
+    #                painter.setPen(QColor("yellow"))
+    #            else:
+    #                painter.setPen(Qt.black)
+    #            painter.drawText(0, top, self.line_number_area.width(), self.fontMetrics().height(),
+    #                             Qt.AlignRight, number)
+    #        block = block.next()
+    #        top = bottom
+    #        bottom = top + int(self.blockBoundingRect(block).height())
+    #        block_number += 1
 
     def paintEvent(self, event):
         super().paintEvent(event)
@@ -670,6 +672,11 @@ class HTMLEditor(QMainWindow):
         self.main_css_file = None
         self.main_js_file = None
         self.initUI()
+
+    def closeEvent(self, event):
+        if hasattr(self, 'code_view') and self.code_view.change_timer.isActive():
+            self.code_view.change_timer.stop()
+        super().closeEvent(event)
 
     def initUI(self):
         self.setWindowTitle('HTML & CSS Editor')
