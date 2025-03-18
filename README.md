@@ -63,5 +63,6 @@ To get started with this project, follow the steps below to install the editor a
     ```bash
    pip install PyQt5
    pip install fuzzywuzzy
+   pip install levenshtein
    pip install python-Levenshtein
    
