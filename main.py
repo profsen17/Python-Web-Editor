@@ -405,29 +405,30 @@ class CodeEditor(QPlainTextEdit):
 class GridWidget(QWidget):
     def __init__(self, editor, parent=None):
         super().__init__(parent)
-        self.editor = editor  # Reference to HTMLEditor instance
+        self.editor = editor
         self.grid_size = 20
-        self.items = []
+        self.items = []  # List of (widget, (rel_x, rel_y), (rel_width, rel_height))
         self.drag_preview = None
         self.setAcceptDrops(True)
-        self.setMinimumHeight(300)  # Initial minimum height
-        self.setMinimumWidth(int(300 * 16 / 9))  # 16:9 ratio (about 533 pixels)
+        self.initial_width = int(300 * 16 / 9)
+        self.initial_height = 300
+        self.setMinimumHeight(self.initial_height)
+        self.setMinimumWidth(self.initial_width)
         self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
-        # Add the bottom-right resize handle widget
+        # Resize handle
         self.resize_handle = QWidget(self)
         self.resize_handle.setFixedSize(15, 15)
         self.resize_handle.setCursor(Qt.SizeFDiagCursor)
         self.update_handle_position()
 
-        # Variables for resizing
         self.resizing = False
         self.start_pos = None
-        self.start_size = None
-        self.start_geometry = None  # Save the full geometry (position + size)
+        self.start_geometry = None
+        self.moving_item = None
+        self.drag_start_pos = None
 
     def sizeHint(self):
-        # Maintain 16:9 aspect ratio based on current height
         height = max(self.minimumHeight(), self.height())
         width = int(height * 16 / 9)
         return QSize(width, height)
@@ -441,7 +442,6 @@ class GridWidget(QWidget):
         )
         painter.setPen(pen)
 
-        # Draw grid lines
         for x in range(0, self.width(), self.grid_size):
             painter.drawLine(x, 0, x, self.height())
         for y in range(0, self.height(), self.grid_size):
@@ -453,7 +453,6 @@ class GridWidget(QWidget):
             pos, size = self.drag_preview
             painter.drawRect(pos.x(), pos.y(), size.width(), size.height())
 
-        # Draw the bottom-right resize handle as a triangle
         painter.setBrush(
             QColor(100, 100, 100) if self.editor.is_dark_mode else QColor(150, 150, 150)
         )
@@ -465,53 +464,90 @@ class GridWidget(QWidget):
         ])
 
     def update_handle_position(self):
-        # Position the bottom-right handle at the bottom-right corner
         self.resize_handle.move(self.width() - self.resize_handle.width(),
                                 self.height() - self.resize_handle.height())
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
         self.update_handle_position()
+        for widget, (rel_x, rel_y), (rel_width, rel_height) in self.items:
+            new_x = int(rel_x * self.width())
+            new_y = int(rel_y * self.height())
+            new_width = int(rel_width * self.width())
+            new_height = int(rel_height * self.height())
+            widget.setGeometry(new_x, new_y, new_width, new_height)
+        self.update()
 
     def mousePressEvent(self, event):
-        if event.button() == Qt.LeftButton and self.resize_handle.geometry().contains(event.pos()):
-            self.resizing = True
-            # Record the full geometry (position and size) so that we always anchor the top-left.
-            self.start_pos = event.globalPos()
-            self.start_geometry = self.geometry()
-            event.accept()
-        else:
-            super().mousePressEvent(event)
+        if event.button() == Qt.LeftButton:
+            if self.resize_handle.geometry().contains(event.pos()):
+                self.resizing = True
+                self.start_pos = event.globalPos()
+                self.start_geometry = self.geometry()
+                event.accept()
+            else:
+                for item in self.items:
+                    widget, _, _ = item
+                    if widget.geometry().contains(event.pos()):
+                        self.moving_item = item
+                        self.drag_start_pos = event.pos()
+                        widget.setStyleSheet("QPushButton { border: 2px dashed #00ff00; }")
+                        event.accept()
+                        return
+        super().mousePressEvent(event)
 
     def mouseMoveEvent(self, event):
         if self.resizing:
             delta = event.globalPos() - self.start_pos
-            # Use the horizontal delta to calculate the new width,
-            # assuming the user drags along the diagonal.
             new_width = self.start_geometry.width() + delta.x()
-            # Enforce a minimum width (and corresponding height for 16:9).
             min_width = int(self.minimumHeight() * 16 / 9)
             new_width = max(min_width, new_width)
-            # Calculate height to maintain 16:9 aspect ratio.
             new_height = int(new_width * 9 / 16)
-            new_width = int(new_height * 16 / 9)  # Ensure exact ratio
-
-            # Always anchor the top-left (start_geometry.x(), start_geometry.y())
+            new_width = int(new_height * 16 / 9)
             self.setGeometry(self.start_geometry.x(), self.start_geometry.y(), new_width, new_height)
-            self.update_handle_position()
+            event.accept()
+        elif self.moving_item and event.buttons() & Qt.LeftButton:
+            delta = event.pos() - self.drag_start_pos
+            widget, _, _ = self.moving_item
+            current_pos = widget.pos()
+            new_pos = current_pos + delta
+            snapped_pos = self.snap_to_grid(new_pos)
+            self.drag_preview = (snapped_pos, QSize(widget.width(), widget.height()))
             self.update()
             event.accept()
         else:
+            # Hover effect without resetting all styles
+            for widget, _, _ in self.items:
+                if widget.geometry().contains(event.pos()) and not self.moving_item:
+                    widget.setStyleSheet("QPushButton { border: 1px solid #00ff00; }")
+                    widget.setCursor(Qt.SizeAllCursor)
+                else:
+                    widget.setStyleSheet("QPushButton { border: none; }")
+                    widget.setCursor(Qt.ArrowCursor)
             super().mouseMoveEvent(event)
 
     def mouseReleaseEvent(self, event):
-        if event.button() == Qt.LeftButton and self.resizing:
-            self.resizing = False
-            event.accept()
-        else:
-            super().mouseReleaseEvent(event)
+        if event.button() == Qt.LeftButton:
+            if self.resizing:
+                self.resizing = False
+                event.accept()
+            elif self.moving_item:
+                widget, _, (rel_width, rel_height) = self.moving_item
+                widget.setStyleSheet("QPushButton { border: none; }")
+                widget.setCursor(Qt.ArrowCursor)
+                if self.drag_preview:
+                    new_pos, _ = self.drag_preview
+                    rel_x = new_pos.x() / self.width()
+                    rel_y = new_pos.y() / self.height()
+                    self.items[self.items.index(self.moving_item)] = (widget, (rel_x, rel_y), (rel_width, rel_height))
+                    widget.move(new_pos)
+                    self.drag_preview = None
+                    self.update()
+                self.moving_item = None
+                self.drag_start_pos = None
+                event.accept()
+        super().mouseReleaseEvent(event)
 
-    # Drag and drop event handlers remain unchanged.
     def dragEnterEvent(self, event):
         if event.mimeData().hasFormat("application/x-button"):
             event.acceptProposedAction()
@@ -520,7 +556,13 @@ class GridWidget(QWidget):
         if event.mimeData().hasFormat("application/x-button"):
             pos = event.pos()
             snapped_pos = self.snap_to_grid(pos)
-            self.drag_preview = (snapped_pos, QSize(100, 40))
+            initial_button_width = 100
+            initial_button_height = 40
+            rel_width = initial_button_width / self.initial_width
+            rel_height = initial_button_height / self.initial_height
+            preview_width = int(rel_width * self.width())
+            preview_height = int(rel_height * self.height())
+            self.drag_preview = (snapped_pos, QSize(preview_width, preview_height))
             self.update()
             event.acceptProposedAction()
 
@@ -533,10 +575,17 @@ class GridWidget(QWidget):
             pos = event.pos()
             snapped_pos = self.snap_to_grid(pos)
             button = QPushButton("Button", self)
-            button.setFixedSize(100, 40)
-            button.move(snapped_pos)
+            initial_button_width = 100
+            initial_button_height = 40
+            rel_width = initial_button_width / self.initial_width
+            rel_height = initial_button_height / self.initial_height
+            button_width = int(rel_width * self.width())
+            button_height = int(rel_height * self.height())
+            button.setGeometry(snapped_pos.x(), snapped_pos.y(), button_width, button_height)
             button.show()
-            self.items.append((button, snapped_pos))
+            rel_x = snapped_pos.x() / self.width()
+            rel_y = snapped_pos.y() / self.height()
+            self.items.append((button, (rel_x, rel_y), (rel_width, rel_height)))
             self.drag_preview = None
             self.update()
             event.acceptProposedAction()
@@ -545,19 +594,24 @@ class GridWidget(QWidget):
         x = round(pos.x() / self.grid_size) * self.grid_size
         y = round(pos.y() / self.grid_size) * self.grid_size
 
+        button_width = int((100 / self.initial_width) * self.width())
+        button_height = int((40 / self.initial_height) * self.height())
+        if self.moving_item:
+            button_width = self.moving_item[0].width()
+            button_height = self.moving_item[0].height()
+
         mid_x = self.width() // 2
-        if abs(x + 50 - mid_x) < self.grid_size * 2:
-            x = mid_x - 50
+        if abs(x + button_width // 2 - mid_x) < self.grid_size * 2:
+            x = mid_x - button_width // 2
 
         mid_y = self.height() // 2
-        if abs(y + 20 - mid_y) < self.grid_size * 2:
-            y = mid_y - 20
+        if abs(y + button_height // 2 - mid_y) < self.grid_size * 2:
+            y = mid_y - button_height // 2
 
-        x = max(0, min(x, self.width() - 100))
-        y = max(0, min(y, self.height() - 40))
+        x = max(0, min(x, self.width() - button_width))
+        y = max(0, min(y, self.height() - button_height))
         
         return QPoint(x, y)
-
 
 class DraggableButton(QPushButton):
     def __init__(self, text, parent=None):
