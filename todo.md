@@ -52,8 +52,9 @@
   - [ ] Ottimizzare il `code_view` per diventare un editor di codice completo
   - [ ] Aggiungere supporto per più schede (multi-file editing)
 - [ ] **Implementazione Indicizzazione delle Righe di Codice**
-  - [ ] Mostrare numeri di riga a sinistra del `code_view`
-  - [ ] Sincronizzare i numeri con lo scorrimento del testo
+  - [x] Mostrare numeri di riga a sinistra del `code_view`
+  - [x] Sincronizzare i numeri con lo scorrimento del testo
+  - [ ] Migliorare lo Stile del Code Viewer
 - [ ] **Implementazione dell'Auto Indent**
   - [ ] Aggiungere indentazione automatica dopo `{`, `<`, ecc.
   - [ ] Supportare la formattazione con tasto (es. Ctrl+Shift+F)
