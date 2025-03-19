@@ -16,23 +16,20 @@ import ast
 class LineNumberArea(QWidget):
     def __init__(self, editor):
         super().__init__(editor)
-        self.code_editor = editor
+        self.editor = editor
 
     def sizeHint(self):
-        return QSize(self.code_editor.line_number_area_width(), 0)
+        return QSize(self.editor.line_number_area_width(), 0)
 
     def paintEvent(self, event):
-        self.code_editor.line_number_area_paint_event(event)
+        self.editor.lineNumberAreaPaintEvent(event)
 
 class SyntaxHighlighter(QSyntaxHighlighter):
     def __init__(self, document, file_path=None):
         super().__init__(document)
         self.file_path = file_path
         self.highlighting_rules = []
-        self.error_lines = set()
-        self.warning_lines = set()
         self.setup_highlighting_rules()
-        self.analyze_code()  # Add this line
 
     def setup_highlighting_rules(self):
         # VS Code Dark+ inspired formats
@@ -60,14 +57,6 @@ class SyntaxHighlighter(QSyntaxHighlighter):
 
         property_format = QTextCharFormat()
         property_format.setForeground(QColor("#D19A66"))  # Orange for CSS properties
-
-        error_format = QTextCharFormat()
-        error_format.setUnderlineStyle(QTextCharFormat.SpellCheckUnderline)
-        error_format.setUnderlineColor(QColor("red"))
-
-        warning_format = QTextCharFormat()
-        warning_format.setUnderlineStyle(QTextCharFormat.SpellCheckUnderline)
-        warning_format.setUnderlineColor(QColor("yellow"))
 
         # Common rules
         self.highlighting_rules.append((r'"[^"\\]*(\\.[^"\\]*)*"', string_format))
@@ -214,12 +203,6 @@ class SyntaxHighlighter(QSyntaxHighlighter):
             "setImmediate", "clearImmediate", "queueMicrotask", "structuredClone"
         ]
 
-        # Common rules across all file types
-        self.highlighting_rules.append((r'"[^"\\]*(\\.[^"\\]*)*"', string_format))  # Double-quoted strings
-        self.highlighting_rules.append((r"'[^'\\]*(\\.[^'\\]*)*'", string_format))  # Single-quoted strings
-        self.highlighting_rules.append((r'\b\d+\.?\d*\b', number_format))  # Numbers (e.g., 123, 12.34)
-        self.highlighting_rules.append((r'[+\-*/=<>!&|%^]+', operator_format))  # Operators
-
         if self.file_path:
             if self.file_path.endswith('.html'):
                 for tag in html_tags:
@@ -240,84 +223,11 @@ class SyntaxHighlighter(QSyntaxHighlighter):
                 self.highlighting_rules.append((r'//.*$', comment_format))
                 self.highlighting_rules.append((r'/\*[\s\S]*?\*/', comment_format))
 
-        # Placeholder for error/warning rules (updated in analyze_code)
-        self.error_format = error_format
-        self.warning_format = warning_format
-
-    def analyze_code(self):
-        self.error_lines.clear()
-        self.warning_lines.clear()
-        text = self.document().toPlainText()
-        lines = text.split('\n')
-
-        if self.file_path:
-            if self.file_path.endswith('.js'):
-                # Basic JS error checking (simplified)
-                try:
-                    # Use ast for a rough JS-like syntax check (Python syntax as proxy)
-                    ast.parse(text.replace('let', '').replace('const', ''))  # Rough approximation
-                except SyntaxError as e:
-                    if hasattr(e, 'lineno'):
-                        self.error_lines.add(e.lineno - 1)  # 0-based index
-
-                # Check for unused variables (basic)
-                defined_vars = set()
-                used_vars = set()
-                for i, line in enumerate(lines):
-                    line = line.strip()
-                    if 'let ' in line or 'const ' in line:
-                        match = re.search(r'(let|const)\s+(\w+)', line)
-                        if match:
-                            defined_vars.add(match.group(2))
-                    for var in defined_vars:
-                        if var in line and not line.startswith(('let', 'const')):
-                            used_vars.add(var)
-                    if '{' in line and '}' not in line:
-                        self.error_lines.add(i)  # Unclosed bracket
-                    if '}' in line and '{' not in line and i not in self.error_lines:
-                        self.error_lines.add(i)  # Unmatched closing bracket
-
-                unused_vars = defined_vars - used_vars
-                for i, line in enumerate(lines):
-                    for var in unused_vars:
-                        if var in line and ('let' in line or 'const' in line):
-                            self.warning_lines.add(i)
-
-            elif self.file_path.endswith('.html'):
-                # Check for unclosed tags (basic)
-                stack = []
-                for i, line in enumerate(lines):
-                    tags = re.findall(r'</?(\w+)', line)
-                    for tag in tags:
-                        if line.strip().startswith(f'<{tag}'):
-                            stack.append(tag)
-                        elif line.strip().startswith(f'</{tag}'):
-                            if not stack or stack[-1] != tag:
-                                self.error_lines.add(i)
-                            else:
-                                stack.pop()
-                if stack:  # Unclosed tags
-                    self.error_lines.add(len(lines) - 1)
-
-            elif self.file_path.endswith('.css'):
-                # Check for missing semicolons (basic)
-                for i, line in enumerate(lines):
-                    line = line.strip()
-                    if line and not line.endswith(';') and not line.endswith('{') and not line.endswith('}'):
-                        self.error_lines.add(i)
-
     def highlightBlock(self, text):
         for pattern, format in self.highlighting_rules:
             for match in re.finditer(pattern, text):
                 start, end = match.start(), match.end()
                 self.setFormat(start, end - start, format)
-
-        # Apply error/warning underlines
-        line_number = self.currentBlock().blockNumber()
-        if line_number in self.error_lines: #THIS LINE
-            self.setFormat(0, len(text), self.error_format)
-        elif line_number in self.warning_lines:
-            self.setFormat(0, len(text), self.warning_format)
 
 class LineNumberArea(QWidget):
     def __init__(self, editor):
@@ -342,9 +252,9 @@ class CodeEditor(QPlainTextEdit):
         self.line_number_area = LineNumberArea(self)
         self.blockCountChanged.connect(self.update_line_number_area_width)
         self.updateRequest.connect(self.update_line_number_area)
-        self.cursorPositionChanged.connect(self.highlight_current_line)
+        # Remove cursorPositionChanged connection since highlight_current_line was already removed
         self.update_line_number_area_width(0)
-    
+        
         self.parent_editor = None
         self.last_content = self.toPlainText()
         self.last_cursor_pos = self.textCursor().position()
@@ -364,7 +274,7 @@ class CodeEditor(QPlainTextEdit):
         return space
 
     def update_line_number_area_width(self, _):
-        self.setViewportMargins(self.line_number_area_width(), 0, 0, 0)
+        self.setViewportMargins(self.line_number_area_width(), 0, 0, 0)  # Remove extra space for dots
 
     def update_line_number_area(self, rect, dy):
         if dy:
@@ -379,17 +289,6 @@ class CodeEditor(QPlainTextEdit):
         cr = self.contentsRect()
         self.line_number_area.setGeometry(QRect(cr.left(), cr.top(), self.line_number_area_width(), cr.height()))
 
-    def highlight_current_line(self):
-        extra_selections = []
-        if not self.isReadOnly():
-            # Create an extra selection for the current line
-            selection = QTextEdit.ExtraSelection()
-            selection.format.setProperty(QTextFormat.FullWidthSelection, True)
-            selection.cursor = self.textCursor()
-            selection.cursor.clearSelection()
-            extra_selections.append(selection)
-        self.setExtraSelections(extra_selections)
-
     def lineNumberAreaPaintEvent(self, event):
         painter = QPainter(self.line_number_area)
         painter.fillRect(event.rect(), Qt.lightGray)
@@ -401,14 +300,9 @@ class CodeEditor(QPlainTextEdit):
         while block.isValid() and top <= event.rect().bottom():
             if block.isVisible() and bottom >= event.rect().top():
                 number = str(block_number + 1)
-                if self.highlighter and block_number in self.highlighter.error_lines:
-                    painter.setPen(QColor("red"))
-                elif self.highlighter and block_number in self.highlighter.warning_lines:
-                    painter.setPen(QColor("yellow"))
-                else:
-                    painter.setPen(Qt.black)
+                painter.setPen(Qt.black)  # Always black, no error/warning colors
                 painter.drawText(0, top, self.line_number_area.width(), self.fontMetrics().height(),
-                                Qt.AlignRight, number)
+                                 Qt.AlignRight, number)
             block = block.next()
             top = bottom
             bottom = top + int(self.blockBoundingRect(block).height())
@@ -417,19 +311,13 @@ class CodeEditor(QPlainTextEdit):
     def set_file_type(self, file_path):
         self.highlighter = SyntaxHighlighter(self.document(), file_path)
         self.highlighter.rehighlight()
-        self.viewport().update() 
 
     def on_text_changed(self):
         if not self.change_timer.isActive():
             self.last_content = self.toPlainText()
             self.last_cursor_pos = self.textCursor().position()
         self.change_timer.start(100)
-        if self.highlighter:
-            self.highlighter.analyze_code()  # Re-analyze on change
-            self.highlighter.rehighlight()
-            self.line_number_area.update()  # Update line numbers
-            self.viewport().update()  # Update dots
-    
+
     def commit_change(self):
         current_content = self.toPlainText()
         if current_content != self.last_content and hasattr(self, 'parent_editor') and self.parent_editor.current_file:
@@ -449,71 +337,6 @@ class CodeEditor(QPlainTextEdit):
 
             self.last_content = current_content
             self.last_cursor_pos = self.textCursor().position()
-
-    #def line_number_area_width(self):
-    #    digits = 1
-    #    max_num = max(1, self.blockCount())
-    #    while max_num >= 10:
-    #        max_num //= 10
-    #        digits += 1
-    #    space = 3 + self.fontMetrics().horizontalAdvance('9') * digits
-    #    return space
-
-    #def update_line_number_area_width(self, _):
-    #    self.setViewportMargins(self.line_number_area_width(), 0, 0, 20)  # Extra space for dots
-
-    #def update_line_number_area(self, rect, dy):
-    #    if dy:
-    #        self.line_number_area.scroll(0, dy)
-    #    else:
-    #        self.line_number_area.update(0, rect.y(), self.line_number_area.width(), rect.height())
-    #    if rect.contains(self.viewport().rect()):
-    #        self.update_line_number_area_width(0)
-
-    #def lineNumberAreaPaintEvent(self, event):
-    #    painter = QPainter(self.line_number_area)
-    #    painter.fillRect(event.rect(), Qt.lightGray)
-    #    block = self.firstVisibleBlock()
-    #    block_number = block.blockNumber()
-    #    top = int(self.blockBoundingGeometry(block).translated(self.contentOffset()).top())
-    #    bottom = top + int(self.blockBoundingRect(block).height())
-
-    #    while block.isValid() and top <= event.rect().bottom():
-    #        if block.isVisible() and bottom >= event.rect().top():
-    #            number = str(block_number + 1)
-    #            if self.highlighter and block_number in self.highlighter.error_lines:
-    #                painter.setPen(QColor("red"))
-    #            elif self.highlighter and block_number in self.highlighter.warning_lines:
-    #                painter.setPen(QColor("yellow"))
-    #            else:
-    #                painter.setPen(Qt.black)
-    #            painter.drawText(0, top, self.line_number_area.width(), self.fontMetrics().height(),
-    #                             Qt.AlignRight, number)
-    #        block = block.next()
-    #        top = bottom
-    #        bottom = top + int(self.blockBoundingRect(block).height())
-    #        block_number += 1
-
-    def paintEvent(self, event):
-        super().paintEvent(event)
-        if not self.highlighter:
-            return
-
-        # Draw error/warning dots at the bottom
-        painter = QPainter(self.viewport())
-        height = self.viewport().height()
-        width = self.viewport().width()
-        total_lines = self.blockCount()
-
-        for line in self.highlighter.error_lines:
-            y = int((line / total_lines) * (height - 20)) + height - 10
-            painter.setPen(QColor("red"))
-            painter.drawEllipse(QRect(width - 10, y, 5, 5))
-
-        for line in self.highlighter.warning_lines:
-            y = int((line / total_lines) * (height - 20)) + height - 10
-            painter.setPen(QColor("yellow"))
-            painter.drawEllipse(QRect(width - 10, y, 5, 5))
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Z and event.modifiers() & Qt.ControlModifier:
@@ -672,11 +495,6 @@ class HTMLEditor(QMainWindow):
         self.main_css_file = None
         self.main_js_file = None
         self.initUI()
-
-    def closeEvent(self, event):
-        if hasattr(self, 'code_view') and self.code_view.change_timer.isActive():
-            self.code_view.change_timer.stop()
-        super().closeEvent(event)
 
     def initUI(self):
         self.setWindowTitle('HTML & CSS Editor')
