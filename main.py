@@ -12,6 +12,7 @@ from PyQt5.QtGui import QIcon, QColor, QDrag, QPainter, QPen, QBrush, QFont, QTe
 from fuzzywuzzy import fuzz
 import re
 import ast
+from PyQt5.QtWidgets import QSizePolicy
 
 class LineNumberArea(QWidget):
     def __init__(self, editor):
@@ -409,13 +410,38 @@ class GridWidget(QWidget):
         self.items = []
         self.drag_preview = None
         self.setAcceptDrops(True)
-        self.setMinimumHeight(300)
+        self.setMinimumHeight(300)  # Initial minimum height
+        self.setMinimumWidth(int(300 * 16 / 9))  # 16:9 ratio (about 533 pixels)
+        self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+
+        # Add the bottom-right resize handle widget
+        self.resize_handle = QWidget(self)
+        self.resize_handle.setFixedSize(15, 15)
+        self.resize_handle.setCursor(Qt.SizeFDiagCursor)
+        self.update_handle_position()
+
+        # Variables for resizing
+        self.resizing = False
+        self.start_pos = None
+        self.start_size = None
+        self.start_geometry = None  # Save the full geometry (position + size)
+
+    def sizeHint(self):
+        # Maintain 16:9 aspect ratio based on current height
+        height = max(self.minimumHeight(), self.height())
+        width = int(height * 16 / 9)
+        return QSize(width, height)
 
     def paintEvent(self, event):
         painter = QPainter(self)
-        pen = QPen(QColor(200, 200, 200, 50) if self.editor.is_dark_mode else QColor(0, 0, 0, 50), 1, Qt.DotLine)
+        pen = QPen(
+            QColor(200, 200, 200, 50) if self.editor.is_dark_mode else QColor(0, 0, 0, 50),
+            1,
+            Qt.DotLine
+        )
         painter.setPen(pen)
 
+        # Draw grid lines
         for x in range(0, self.width(), self.grid_size):
             painter.drawLine(x, 0, x, self.height())
         for y in range(0, self.height(), self.grid_size):
@@ -427,6 +453,65 @@ class GridWidget(QWidget):
             pos, size = self.drag_preview
             painter.drawRect(pos.x(), pos.y(), size.width(), size.height())
 
+        # Draw the bottom-right resize handle as a triangle
+        painter.setBrush(
+            QColor(100, 100, 100) if self.editor.is_dark_mode else QColor(150, 150, 150)
+        )
+        painter.setPen(Qt.NoPen)
+        painter.drawPolygon([
+            QPoint(self.width() - 15, self.height()),
+            QPoint(self.width(), self.height()),
+            QPoint(self.width(), self.height() - 15)
+        ])
+
+    def update_handle_position(self):
+        # Position the bottom-right handle at the bottom-right corner
+        self.resize_handle.move(self.width() - self.resize_handle.width(),
+                                self.height() - self.resize_handle.height())
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self.update_handle_position()
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton and self.resize_handle.geometry().contains(event.pos()):
+            self.resizing = True
+            # Record the full geometry (position and size) so that we always anchor the top-left.
+            self.start_pos = event.globalPos()
+            self.start_geometry = self.geometry()
+            event.accept()
+        else:
+            super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event):
+        if self.resizing:
+            delta = event.globalPos() - self.start_pos
+            # Use the horizontal delta to calculate the new width,
+            # assuming the user drags along the diagonal.
+            new_width = self.start_geometry.width() + delta.x()
+            # Enforce a minimum width (and corresponding height for 16:9).
+            min_width = int(self.minimumHeight() * 16 / 9)
+            new_width = max(min_width, new_width)
+            # Calculate height to maintain 16:9 aspect ratio.
+            new_height = int(new_width * 9 / 16)
+            new_width = int(new_height * 16 / 9)  # Ensure exact ratio
+
+            # Always anchor the top-left (start_geometry.x(), start_geometry.y())
+            self.setGeometry(self.start_geometry.x(), self.start_geometry.y(), new_width, new_height)
+            self.update_handle_position()
+            self.update()
+            event.accept()
+        else:
+            super().mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        if event.button() == Qt.LeftButton and self.resizing:
+            self.resizing = False
+            event.accept()
+        else:
+            super().mouseReleaseEvent(event)
+
+    # Drag and drop event handlers remain unchanged.
     def dragEnterEvent(self, event):
         if event.mimeData().hasFormat("application/x-button"):
             event.acceptProposedAction()
@@ -472,6 +557,7 @@ class GridWidget(QWidget):
         y = max(0, min(y, self.height() - 40))
         
         return QPoint(x, y)
+
 
 class DraggableButton(QPushButton):
     def __init__(self, text, parent=None):
@@ -554,20 +640,18 @@ class HTMLEditor(QMainWindow):
 
         main_splitter = QSplitter(Qt.Horizontal)
 
+        # Sidebar setup (unchanged)
         sidebar_widget = QWidget()
         sidebar_layout = QVBoxLayout()
-        
         self.tab_widget = QTabWidget()
         self.tab_widget.setVisible(False)
         
         project_files_widget = QWidget()
         project_files_layout = QVBoxLayout()
-        
         self.search_bar = QLineEdit()
         self.search_bar.setPlaceholderText("Cerca file...")
         self.search_bar.textChanged.connect(self.filter_files)
         project_files_layout.addWidget(self.search_bar)
-        
         self.file_tree = QTreeWidget()
         self.file_tree.setHeaderLabel("Project Files")
         self.file_tree.itemClicked.connect(self.handle_item_clicked)
@@ -579,42 +663,31 @@ class HTMLEditor(QMainWindow):
         self.file_tree.itemCollapsed.connect(self.store_expanded_state)
         self.file_tree.viewport().installEventFilter(self)
         project_files_layout.addWidget(self.file_tree)
-        
-        # Add New Page button below the file tree
         new_page_button = QPushButton("New Page")
         new_page_button.clicked.connect(self.newPage)
         project_files_layout.addWidget(new_page_button)
-        
         project_files_widget.setLayout(project_files_layout)
         self.tab_widget.addTab(project_files_widget, "Project Files")
         
         components_widget = QWidget()
         components_layout = QVBoxLayout()
-        
         scroll_area = QScrollArea()
         scroll_area.setWidgetResizable(True)
         scroll_content = QWidget()
-        
         components_grid = QGridLayout()
         components_grid.setSpacing(10)
         components_grid.setAlignment(Qt.AlignHCenter)
-        
         btn1 = DraggableButton("Button")
         components_grid.addWidget(btn1, 0, 0)
-        
         btn2 = DraggableButton("Div")
         components_grid.addWidget(btn2, 0, 1)
-        
         btn3 = DraggableButton("Image")
         components_grid.addWidget(btn3, 1, 0)
-        
         btn4 = DraggableButton("Text")
         components_grid.addWidget(btn4, 1, 1)
-        
         scroll_content.setLayout(components_grid)
         scroll_area.setWidget(scroll_content)
         components_layout.addWidget(scroll_area)
-        
         components_widget.setLayout(components_layout)
         self.tab_widget.addTab(components_widget, "Components")
         
@@ -622,7 +695,7 @@ class HTMLEditor(QMainWindow):
         sidebar_widget.setLayout(sidebar_layout)
         sidebar_widget.setMinimumWidth(200)
 
-        # Assign right_widget as an instance variable
+        # Right widget setup with scrollable Design View
         self.right_widget = QWidget()
         right_layout = QVBoxLayout()
 
@@ -643,29 +716,26 @@ class HTMLEditor(QMainWindow):
 
         # Stacked widget for views
         self.view_stack = QStackedWidget()
+
+        # Wrap Design View in a QScrollArea
         self.design_view = GridWidget(self)
+        self.design_scroll_area = QScrollArea()
+        self.design_scroll_area.setWidgetResizable(False)  # Keep the widget’s fixed size
+        self.design_scroll_area.setWidget(self.design_view)
+        self.design_scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.design_scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+
         self.code_view = CodeEditor()
         self.code_view.setPlaceholderText("Code View")
-        self.code_view.parent_editor = self  # Link to HTMLEditor
+        self.code_view.parent_editor = self
         self.code_view.textChanged.connect(self.save_current_file)
 
-        editMenu = self.menuBar().addMenu('Edit')
-        undoAct = QAction('Undo', self)
-        undoAct.setShortcut('Ctrl+Z')
-        undoAct.triggered.connect(self.undo)
-        editMenu.addAction(undoAct)
-
-        redoAct = QAction('Redo', self)
-        redoAct.setShortcut('Ctrl+Y')
-        redoAct.triggered.connect(self.redo)
-        editMenu.addAction(redoAct)
-
-        self.view_stack.addWidget(self.design_view)
+        # Add views to stack
+        self.view_stack.addWidget(self.design_scroll_area)  # Use scroll area instead of design_view directly
         self.view_stack.addWidget(self.code_view)
         right_layout.addWidget(self.view_stack)
 
         self.right_widget.setLayout(right_layout)
-        # Initially hide the right widget if no project is loaded
         self.right_widget.setVisible(False)
 
         main_splitter.addWidget(sidebar_widget)
@@ -1224,15 +1294,6 @@ class HTMLEditor(QMainWindow):
                 self.load_html_to_design_view()
             self.statusBar().showMessage(f"Main files selected: HTML={html_file}, CSS={css_file}, JS={js_file}", 2000)
 
-    def load_html_to_design_view(self):
-        if self.main_html_file and os.path.exists(self.main_html_file):
-            with open(self.main_html_file, "r", encoding="utf-8") as f:
-                content = f.read()
-                self.design_view.items.clear()
-                for widget, _ in self.design_view.items:
-                    widget.deleteLater()
-                self.design_view.update()
-
     def load_project_structure(self, path, parent=None):
         if parent is None:
             root = QTreeWidgetItem(self.file_tree, [os.path.basename(path)])
@@ -1554,14 +1615,28 @@ class HTMLEditor(QMainWindow):
 
     def switch_to_design(self):
         if self.current_file and self.current_file.endswith('.html'):
-            self.view_stack.setCurrentWidget(self.design_view)
+            self.view_stack.setCurrentWidget(self.design_scroll_area)  # Use the scroll area, not design_view
             self.design_button.setChecked(True)
             self.code_button.setChecked(False)
+            self.load_html_to_design_view()  # Optionally load HTML content into design view
 
     def switch_to_code(self):
         self.view_stack.setCurrentWidget(self.code_view)
         self.code_button.setChecked(True)
         self.design_button.setChecked(False)
+
+    def load_html_to_design_view(self):
+        if self.current_file and os.path.exists(self.current_file):  # Changed from main_html_file to current_file
+            with open(self.current_file, "r", encoding="utf-8") as f:
+                content = f.read()
+                # Clear existing items
+                for widget, _ in self.design_view.items:
+                    widget.deleteLater()
+                self.design_view.items.clear()
+                # Placeholder: Add logic to parse and render HTML content if desired
+                # For now, just clear and update
+                self.design_view.update()
+                self.statusBar().showMessage(f"Design view loaded for: {self.current_file}", 1000)
 
     def newPage(self):
         if not self.project_path:
