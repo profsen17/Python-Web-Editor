@@ -25,38 +25,73 @@ class LineNumberArea(QWidget):
         self.editor.lineNumberAreaPaintEvent(event)
 
 class SyntaxHighlighter(QSyntaxHighlighter):
-    def __init__(self, document, file_path=None):
+    def __init__(self, document, file_path=None, editor=None):
         super().__init__(document)
         self.file_path = file_path
+        self.editor = editor  # Reference to CodeEditor to access parent_editor.is_dark_mode
         self.highlighting_rules = []
         self.setup_highlighting_rules()
 
     def setup_highlighting_rules(self):
-        # VS Code Dark+ inspired formats
-        keyword_format = QTextCharFormat()
-        keyword_format.setForeground(QColor("#C678DD"))  # Purple for keywords
+        # Clear existing rules
+        self.highlighting_rules.clear()
 
-        function_format = QTextCharFormat()
-        function_format.setForeground(QColor("#DCDCAA"))  # Light Yellow for functions
+        # Get the current dark mode state from the editor
+        is_dark_mode = self.editor.parent_editor.is_dark_mode if self.editor and self.editor.parent_editor else False
 
-        string_format = QTextCharFormat()
-        string_format.setForeground(QColor("#98C379"))  # Green for strings
+        # Define color schemes based on theme
+        if is_dark_mode:
+            # Dark mode: VS Code Dark+ colors
+            keyword_format = QTextCharFormat()
+            keyword_format.setForeground(QColor("#C678DD"))  # Purple for keywords
 
-        comment_format = QTextCharFormat()
-        comment_format.setForeground(QColor("#6A9955"))  # Olive Green for comments
+            function_format = QTextCharFormat()
+            function_format.setForeground(QColor("#DCDCAA"))  # Light Yellow for functions
 
-        number_format = QTextCharFormat()
-        number_format.setForeground(QColor("#B5CEA8"))  # Light Green for numbers
+            string_format = QTextCharFormat()
+            string_format.setForeground(QColor("#98C379"))  # Green for strings
 
-        operator_format = QTextCharFormat()
-        operator_format.setForeground(QColor("#D4D4D4"))  # Light Gray for operators
+            comment_format = QTextCharFormat()
+            comment_format.setForeground(QColor("#6A9955"))  # Olive Green for comments
 
-        tag_format = QTextCharFormat()
-        tag_format.setForeground(QColor("#E06C75"))  # Reddish Pink for HTML tags
-        tag_format.setFontWeight(QFont.Bold)
+            number_format = QTextCharFormat()
+            number_format.setForeground(QColor("#B5CEA8"))  # Light Green for numbers
 
-        property_format = QTextCharFormat()
-        property_format.setForeground(QColor("#D19A66"))  # Orange for CSS properties
+            operator_format = QTextCharFormat()
+            operator_format.setForeground(QColor("#D4D4D4"))  # Light Gray for operators
+
+            tag_format = QTextCharFormat()
+            tag_format.setForeground(QColor("#E06C75"))  # Reddish Pink for HTML tags
+            tag_format.setFontWeight(QFont.Bold)
+
+            property_format = QTextCharFormat()
+            property_format.setForeground(QColor("#D19A66"))  # Orange for CSS properties
+        else:
+            # Light mode: Adjusted for better visibility
+            keyword_format = QTextCharFormat()
+            keyword_format.setForeground(QColor("#800080"))  # Dark Purple for keywords
+
+            function_format = QTextCharFormat()
+            function_format.setForeground(QColor("#795E26"))  # Dark Goldenrod for functions
+
+            string_format = QTextCharFormat()
+            string_format.setForeground(QColor("#008000"))  # Dark Green for strings
+
+            comment_format = QTextCharFormat()
+            comment_format.setForeground(QColor("#6A9955"))  # Olive Green for comments
+
+            number_format = QTextCharFormat()
+            number_format.setForeground(QColor("#098658"))  # Teal for numbers
+
+            operator_format = QTextCharFormat()
+            operator_format.setForeground(QColor("#000000"))  # Black for operators
+
+            tag_format = QTextCharFormat()
+            tag_format.setForeground(QColor("#A31515"))  # Dark Red for HTML tags
+            tag_format.setFontWeight(QFont.Bold)
+
+            property_format = QTextCharFormat()
+            property_format.setForeground(QColor("#D16900"))  # Darker Orange for CSS properties
 
         # Common rules
         self.highlighting_rules.append((r'"[^"\\]*(\\.[^"\\]*)*"', string_format))
@@ -205,10 +240,7 @@ class SyntaxHighlighter(QSyntaxHighlighter):
 
         if self.file_path:
             if self.file_path.endswith('.html'):
-                # Updated regex to match full opening and closing tags including attributes and '>'
                 for tag in html_tags:
-                    # Opening tag: <tag optional_attributes>
-                    # Closing tag: </tag>
                     self.highlighting_rules.append((fr'<\s*{tag}(?:\s+[^>]*)?>|<\s*/\s*{tag}\s*>', tag_format))
                 self.highlighting_rules.append((r'<!--[\s\S]*?-->', comment_format))
 
@@ -225,6 +257,11 @@ class SyntaxHighlighter(QSyntaxHighlighter):
                     self.highlighting_rules.append((fr'\b{func}\b', function_format))
                 self.highlighting_rules.append((r'//.*$', comment_format))
                 self.highlighting_rules.append((r'/\*[\s\S]*?\*/', comment_format))
+
+    def update_highlighting(self):
+        """Refresh highlighting rules and rehighlight the document."""
+        self.setup_highlighting_rules()
+        self.rehighlight()
 
     def highlightBlock(self, text):
         for pattern, format in self.highlighting_rules:
@@ -255,7 +292,6 @@ class CodeEditor(QPlainTextEdit):
         self.line_number_area = LineNumberArea(self)
         self.blockCountChanged.connect(self.update_line_number_area_width)
         self.updateRequest.connect(self.update_line_number_area)
-        # Remove cursorPositionChanged connection since highlight_current_line was already removed
         self.update_line_number_area_width(0)
         
         self.parent_editor = None
@@ -312,8 +348,16 @@ class CodeEditor(QPlainTextEdit):
             block_number += 1
 
     def set_file_type(self, file_path):
-        self.highlighter = SyntaxHighlighter(self.document(), file_path)
+        self.highlighter = SyntaxHighlighter(self.document(), file_path, editor=self)
         self.highlighter.rehighlight()
+
+    def update_highlighting(self):
+        if self.highlighter:
+            self.highlighter.update_highlighting()
+
+    def on_theme_changed(self):
+        """Called when the theme changes to update highlighting in real time."""
+        self.update_highlighting()
 
     def on_text_changed(self):
         if not self.change_timer.isActive():
@@ -988,6 +1032,7 @@ class HTMLEditor(QMainWindow):
     def set_theme(self, dark_mode):
         self.is_dark_mode = dark_mode
         self.apply_theme()
+        self.code_view.on_theme_changed()
 
     def update_breadcrumbs(self, item):
         self.breadcrumb_bar.clear()
