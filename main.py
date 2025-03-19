@@ -205,8 +205,11 @@ class SyntaxHighlighter(QSyntaxHighlighter):
 
         if self.file_path:
             if self.file_path.endswith('.html'):
+                # Updated regex to match full opening and closing tags including attributes and '>'
                 for tag in html_tags:
-                    self.highlighting_rules.append((fr'<\s*{tag}\b|<\s*/\s*{tag}\b', tag_format))
+                    # Opening tag: <tag optional_attributes>
+                    # Closing tag: </tag>
+                    self.highlighting_rules.append((fr'<\s*{tag}(?:\s+[^>]*)?>|<\s*/\s*{tag}\s*>', tag_format))
                 self.highlighting_rules.append((r'<!--[\s\S]*?-->', comment_format))
 
             elif self.file_path.endswith('.css'):
