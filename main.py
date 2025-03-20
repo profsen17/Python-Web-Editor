@@ -6,9 +6,9 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QPlainTextEdit, QTreeWid
                             QAction, QMenu, QHBoxLayout, QFileDialog, QMessageBox,
                             QToolBar, QPushButton, QLabel, QInputDialog, QLineEdit,
                             QTabWidget, QGridLayout, QScrollArea, QDialog, QComboBox, 
-                            QFormLayout, QStackedWidget, QTextEdit, QShortcut)
-from PyQt5.QtCore import Qt, QPropertyAnimation, QEasingCurve, QMimeData, QPoint, QSize, QRect, QTimer
-from PyQt5.QtGui import QIcon, QColor, QDrag, QPainter, QPen, QBrush, QFont, QTextFormat, QTextCharFormat, QKeySequence, QSyntaxHighlighter
+                            QFormLayout, QStackedWidget, QTextEdit, QShortcut, QCompleter)
+from PyQt5.QtCore import Qt, QPropertyAnimation, QEasingCurve, QMimeData, QPoint, QSize, QRect, QTimer, QStringListModel
+from PyQt5.QtGui import QIcon, QColor, QDrag, QPainter, QPen, QBrush, QFont, QTextFormat, QTextCharFormat, QKeySequence, QSyntaxHighlighter, QTextCursor
 from fuzzywuzzy import fuzz
 import re
 import ast
@@ -303,6 +303,41 @@ class CodeEditor(QPlainTextEdit):
         self.change_timer.timeout.connect(self.commit_change)
         self.textChanged.connect(self.on_text_changed)
         self.highlighter = None
+        self._just_auto_closed = False  # Flag to track if the last action was an auto-close
+
+        self.completer = QCompleter(self)
+        self.completer.setWidget(self)
+        self.completer.setCompletionMode(QCompleter.PopupCompletion)
+        self.completer.setCaseSensitivity(Qt.CaseInsensitive)
+        self.completer.activated.connect(self.insert_completion)
+
+        self.html_tags = [
+            "a", "abbr", "acronym", "address", "applet", "area", "article", "aside", "audio", 
+            "b", "base", "basefont", "bdi", "bdo", "big", "blockquote", "body", "br", "button", 
+            "canvas", "caption", "center", "cite", "code", "col", "colgroup", "command", "content", 
+            "data", "datalist", "dd", "del", "details", "dfn", "dialog", "dir", "div", "dl", "dt", 
+            "em", "embed", "fieldset", "figcaption", "figure", "font", "footer", "form", "frame", 
+            "frameset", "h1", "h2", "h3", "h4", "h5", "h6", "head", "header", "hgroup", "hr", "html", 
+            "i", "iframe", "img", "input", "ins", "isindex", "kbd", "keygen", "label", "legend", 
+            "li", "link", "main", "map", "mark", "marquee", "menu", "menuitem", "meta", "meter", 
+            "nav", "nobr", "noframes", "noscript", "object", "ol", "optgroup", "option", "output", 
+            "p", "param", "picture", "plaintext", "pre", "progress", "q", "rb", "rp", "rt", "rtc", 
+            "ruby", "s", "samp", "script", "section", "select", "shadow", "small", "source", "spacer", 
+            "span", "strike", "strong", "style", "sub", "summary", "sup", "svg", "table", "tbody", 
+            "td", "template", "textarea", "tfoot", "th", "thead", "time", "title", "tr", "track", 
+            "tt", "u", "ul", "var", "video", "wbr", "xmp"
+        ]
+        self.completer.setModel(QStringListModel(self.html_tags, self.completer))
+
+    def insert_completion(self, completion):
+        if self.completer.widget() != self:
+            return
+        cursor = self.textCursor()
+        extra = len(completion) - len(self.completer.completionPrefix())
+        cursor.movePosition(QTextCursor.Left)
+        cursor.movePosition(QTextCursor.EndOfWord)
+        cursor.insertText(completion[-extra:])
+        self.setTextCursor(cursor)
 
     def line_number_area_width(self):
         digits = 1
@@ -364,7 +399,12 @@ class CodeEditor(QPlainTextEdit):
         if not self.change_timer.isActive():
             self.last_content = self.toPlainText()
             self.last_cursor_pos = self.textCursor().position()
-        self.change_timer.start(100)
+            self.change_timer.start(100)  # Keep the timer for periodic autosave
+        # Ensure changes are committed if switching files
+        if hasattr(self, 'parent_editor') and self.parent_editor.current_file:
+            current_content = self.toPlainText()
+            if current_content != self.last_content:
+                self.commit_change()  # Force commit to ensure changes are saved
 
     def commit_change(self):
         current_content = self.toPlainText()
@@ -386,13 +426,136 @@ class CodeEditor(QPlainTextEdit):
             self.last_content = current_content
             self.last_cursor_pos = self.textCursor().position()
 
+            # Save to file immediately after committing to history
+            self.parent_editor.save_current_file()
+
+    def get_current_word(self):
+        cursor = self.textCursor()
+        cursor.select(QTextCursor.WordUnderCursor)
+        return cursor.selectedText()
+
     def keyPressEvent(self, event):
+        # Handle completer popup visibility
+        if self.completer and self.completer.popup().isVisible():
+            if event.key() in (Qt.Key_Enter, Qt.Key_Return, Qt.Key_Escape, Qt.Key_Tab, Qt.Key_Backtab):
+                event.ignore()
+                return
+
+        # Manual trigger with Ctrl+Space
+        is_shortcut = (event.modifiers() & Qt.ControlModifier) and event.key() == Qt.Key_Space
+        if is_shortcut:
+            self.completer.setCompletionPrefix(self.get_current_word())
+            # Calculate cursor position for popup
+            cursor = self.textCursor()
+            cursor_rect = self.cursorRect(cursor)
+            cursor_pos = self.viewport().mapToGlobal(cursor_rect.bottomLeft())
+            self.completer.complete()
+            self.completer.popup().move(cursor_pos)
+            return
+
+        # Handle undo/redo shortcuts
         if event.key() == Qt.Key_Z and event.modifiers() & Qt.ControlModifier:
             self.undo_action()
         elif event.key() == Qt.Key_Y and event.modifiers() & Qt.ControlModifier:
             self.redo_action()
         else:
+            cursor = self.textCursor()
+            cursor_pos = cursor.position()
+            text_before = self.toPlainText()[:cursor_pos]
+            text_after = self.toPlainText()[cursor_pos:]
+
+            # Only proceed if the file is an HTML file
+            if hasattr(self, 'highlighter') and self.highlighter and self.highlighter.file_path and self.highlighter.file_path.endswith('.html'):
+                # Auto-close tag when typing '>'
+                if event.key() == Qt.Key_Greater:
+                    last_open_tag_match = re.search(r'<(\w+)(?:\s+[^>]*)?$', text_before)
+                    if last_open_tag_match:
+                        tag_name = last_open_tag_match.group(1)
+                        self_closing_tags = [
+                            "area", "base", "br", "col", "embed", "hr", "img", "input",
+                            "link", "meta", "param", "source", "track", "wbr"
+                        ]
+                        if tag_name not in self_closing_tags:
+                            cursor.beginEditBlock()
+                            # Insert the closing bracket and closing tag on the same line
+                            cursor.insertText(">")
+                            closing_tag = f"</{tag_name}>"
+                            cursor.insertText(closing_tag)
+                            # Move cursor to position between the tags without selecting
+                            cursor.movePosition(cursor.Left, cursor.MoveAnchor, len(closing_tag))
+                            self.setTextCursor(cursor)
+                            cursor.endEditBlock()
+                            self._just_auto_closed = True  # Set flag after auto-close
+                            return
+
+                # Auto-indent when pressing Enter, but only after an auto-close
+                elif (event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter) and self._just_auto_closed:
+                    # Find the last opening tag before the cursor
+                    last_open_tag_match = re.search(r'<(\w+)(?:\s+[^>]*)?>$', text_before.strip())
+                    # Find the next closing tag after the cursor
+                    next_close_tag_match = re.search(r'^</(\w+)>', text_after.strip())
+
+                    if last_open_tag_match and next_close_tag_match:
+                        open_tag = last_open_tag_match.group(1)
+                        close_tag = next_close_tag_match.group(1)
+                        if open_tag == close_tag:  # Ensure the tags match
+                            # Determine the indentation level of the opening tag
+                            line_start = text_before.rfind('\n') + 1 if '\n' in text_before else 0
+                            indent_level = len(text_before[line_start:]) - len(text_before[line_start:].lstrip())
+                            indent = " " * indent_level
+                            indent_next = " " * (indent_level + 4)  # 4 spaces for the next level
+
+                            cursor.beginEditBlock()
+                            # Insert new line with increased indent, then closing tag with original indent
+                            cursor.insertText(f"\n{indent_next}\n{indent}")
+                            # Move cursor to the indented line between tags
+                            cursor.movePosition(cursor.Up, cursor.MoveAnchor, 1)
+                            cursor.movePosition(cursor.EndOfLine, cursor.MoveAnchor)
+                            self.setTextCursor(cursor)
+                            cursor.endEditBlock()
+                            self._just_auto_closed = False  # Reset flag after auto-indent
+                            return
+
+            # Reset the flag if any other key is pressed or if auto-indent didn't trigger
+            self._just_auto_closed = False
             super().keyPressEvent(event)
+
+            # Update completer dynamically as the user types
+            if self.completer:
+                prefix = self.get_current_word()
+                self.completer.setCompletionPrefix(prefix)
+                if len(prefix) > 0 and self.completer.completionCount() > 0:
+                    # Calculate cursor position for popup
+                    cursor = self.textCursor()
+                    cursor_rect = self.cursorRect(cursor)
+                    cursor_pos = self.viewport().mapToGlobal(cursor_rect.bottomLeft())
+                    self.completer.complete()
+                    self.completer.popup().move(cursor_pos)
+                else:
+                    self.completer.popup().hide()
+
+    def auto_close_tag(self, cursor, text_before):
+        # Only apply to HTML files
+        if not (hasattr(self, 'highlighter') and self.highlighter and self.highlighter.file_path and self.highlighter.file_path.endswith('.html')):
+            return False
+
+        # Look for the last opening tag before the cursor
+        last_open_tag_match = re.search(r'<(\w+)(?:\s+[^>]*)?$', text_before)
+        if last_open_tag_match:
+            tag_name = last_open_tag_match.group(1)
+            self_closing_tags = [
+                "area", "base", "br", "col", "embed", "hr", "img", "input",
+                "link", "meta", "param", "source", "track", "wbr"
+            ]
+            if tag_name not in self_closing_tags:
+                cursor.beginEditBlock()
+                cursor.insertText(">")
+                cursor.insertText(f"</{tag_name}>")
+                cursor.movePosition(cursor.Left, cursor.KeepAnchor, len(f"</{tag_name}>"))
+                self.setTextCursor(cursor)
+                cursor.endEditBlock()
+                return True
+        return False
 
     def undo_action(self):
         if hasattr(self, 'parent_editor') and self.parent_editor.current_file:
@@ -1546,6 +1709,10 @@ class HTMLEditor(QMainWindow):
     def handle_item_clicked(self, item, column):
         file_path = item.data(0, Qt.UserRole)
         if file_path and os.path.isfile(file_path):
+            # Before switching files, ensure the current file's changes are saved
+            if self.current_file and self.current_file != file_path:
+                self.code_view.commit_change()  # Force commit changes for the current file
+
             self.current_file = file_path
             if file_path not in self.file_histories:
                 try:
