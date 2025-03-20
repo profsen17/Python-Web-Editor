@@ -5,6 +5,7 @@
   - [x] Risolvere il caricamento ricorsivo delle sottocartelle all'apertura del progetto
   - [x] Gestire errori di rinomina (PermissionError, RecursionError, UnboundLocalError)
   - [x] Assicurare che le cartelle vuote siano gestite correttamente nel menu contestuale
+  - [ ] Sistemare il Sistema di Salvataggio Automatico
 - [x] **Test del File System**
   - [x] Verifica caricamento di progetti con struttura annidata
   - [x] Test della rinomina di file e cartelle (con aggiornamento icone)
