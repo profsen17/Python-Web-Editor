@@ -1,3 +1,245 @@
 {
-  
+  "a": {
+    "attributes": ["href", "target", "rel", "download", "hreflang", "type"]
+  },
+  "abbr": {
+    "attributes": ["title"]
+  },
+  "address": {
+    "attributes": []
+  },
+  "area": {
+    "attributes": ["alt", "coords", "shape", "href", "target", "download"]
+  },
+  "article": {
+    "attributes": []
+  },
+  "aside": {
+    "attributes": []
+  },
+  "audio": {
+    "attributes": ["src", "controls", "autoplay", "loop", "muted", "preload"]
+  },
+  "b": {
+    "attributes": []
+  },
+  "base": {
+    "attributes": ["href", "target"]
+  },
+  "bdi": {
+    "attributes": []
+  },
+  "bdo": {
+    "attributes": ["dir"]
+  },
+  "blockquote": {
+    "attributes": ["cite"]
+  },
+  "body": {
+    "attributes": ["onload", "onunload", "background", "bgcolor", "text", "link", "vlink", "alink"]
+  },
+  "br": {
+    "attributes": []
+  },
+  "button": {
+    "attributes": ["type", "name", "value", "disabled", "autofocus", "form", "formaction", "formenctype", "formmethod", "formnovalidate", "formtarget"]
+  },
+  "canvas": {
+    "attributes": ["width", "height"]
+  },
+  "caption": {
+    "attributes": []
+  },
+  "cite": {
+    "attributes": []
+  },
+  "code": {
+    "attributes": []
+  },
+  "col": {
+    "attributes": ["span", "width"]
+  },
+  "colgroup": {
+    "attributes": ["span", "width"]
+  },
+  "data": {
+    "attributes": ["value"]
+  },
+  "datalist": {
+    "attributes": []
+  },
+  "dd": {
+    "attributes": []
+  },
+  "del": {
+    "attributes": ["cite", "datetime"]
+  },
+  "details": {
+    "attributes": ["open"]
+  },
+  "dfn": {
+    "attributes": ["title"]
+  },
+  "dialog": {
+    "attributes": ["open"]
+  },
+  "div": {
+    "attributes": []
+  },
+  "dl": {
+    "attributes": []
+  },
+  "dt": {
+    "attributes": []
+  },
+  "em": {
+    "attributes": []
+  },
+  "embed": {
+    "attributes": ["src", "type", "width", "height"]
+  },
+  "fieldset": {
+    "attributes": ["disabled", "form", "name"]
+  },
+  "figcaption": {
+    "attributes": []
+  },
+  "figure": {
+    "attributes": []
+  },
+  "footer": {
+    "attributes": []
+  },
+  "form": {
+    "attributes": ["action", "method", "enctype", "autocomplete", "novalidate", "target", "name", "rel", "accept-charset"]
+  },
+  "h1": {
+    "attributes": []
+  },
+  "h2": {
+    "attributes": []
+  },
+  "h3": {
+    "attributes": []
+  },
+  "h4": {
+    "attributes": []
+  },
+  "h5": {
+    "attributes": []
+  },
+  "h6": {
+    "attributes": []
+  },
+  "head": {
+    "attributes": []
+  },
+  "header": {
+    "attributes": []
+  },
+  "hgroup": {
+    "attributes": []
+  },
+  "hr": {
+    "attributes": ["align", "noshade", "size", "width"]
+  },
+  "html": {
+    "attributes": ["lang", "dir"]
+  },
+  "i": {
+    "attributes": []
+  },
+  "iframe": {
+    "attributes": ["src", "name", "width", "height", "sandbox", "allow", "allowfullscreen", "loading", "referrerpolicy"]
+  },
+  "img": {
+    "attributes": ["src", "alt", "width", "height", "loading", "decoding", "ismap", "usemap", "longdesc"]
+  },
+  "input": {
+    "attributes": ["type", "name", "value", "placeholder", "required", "disabled", "readonly", "size", "maxlength", "min", "max", "step", "pattern", "autocomplete", "autofocus", "form", "formaction", "formenctype", "formmethod", "formnovalidate", "formtarget", "list", "multiple", "accept", "capture", "checked"]
+  },
+  "ins": {
+    "attributes": ["cite", "datetime"]
+  },
+  "kbd": {
+    "attributes": []
+  },
+  "label": {
+    "attributes": ["for", "form"]
+  },
+  "legend": {
+    "attributes": []
+  },
+  "li": {
+    "attributes": ["value"]
+  },
+  "link": {
+    "attributes": ["href", "rel", "type", "media", "hreflang", "sizes", "title", "integrity", "crossorigin"]
+  },
+  "main": {
+    "attributes": []
+  },
+  "map": {
+    "attributes": ["name"]
+  },
+  "mark": {
+    "attributes": []
+  },
+  "meta": {
+    "attributes": ["name", "content", "charset", "http-equiv"]
+  },
+  "meter": {
+    "attributes": ["value", "min", "max", "low", "high", "optimum"]
+  },
+  "nav": {
+    "attributes": []
+  },
+  "noscript": {
+    "attributes": []
+  },
+  "object": {
+    "attributes": ["data", "type", "width", "height", "form", "name", "usemap", "typemustmatch"]
+  },
+  "ol": {
+    "attributes": ["reversed", "start", "type"]
+  },
+  "optgroup": {
+    "attributes": ["label", "disabled"]
+  },
+  "option": {
+    "attributes": ["value", "label", "selected", "disabled"]
+  },
+  "output": {
+    "attributes": ["for", "form", "name"]
+  },
+  "p": {
+    "attributes": []
+  },
+  "param": {
+    "attributes": ["name", "value"]
+  },
+  "picture": {
+    "attributes": []
+  },
+  "pre": {
+    "attributes": []
+  },
+  "progress": {
+    "attributes": ["value", "max"]
+  },
+  "q": {
+    "attributes": ["cite"]
+  },
+  "rp": {
+    "attributes": []
+  },
+  "rt": {
+    "attributes": []
+  },
+  "ruby": {
+    "attributes": []
+  },
+  "s": {
+    "attributes": []
+  }
 }
