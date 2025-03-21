@@ -1,1 +1,170 @@
-
+{
+  "color": {
+    "valori": ["nome_colore", "#hex", "rgb()", "rgba()", "hsl()", "hsla()"],
+    "unità": []
+  },
+  "font-size": {
+    "valori": ["xx-small", "x-small", "small", "medium", "large", "x-large", "xx-large", "larger", "smaller"],
+    "unità": ["em", "rem", "px", "%"]
+  },
+  "margin": {
+    "valori": ["auto"],
+    "unità": ["em", "rem", "px", "%"]
+  },
+  "padding": {
+    "valori": [],
+    "unità": ["em", "rem", "px", "%"]
+  },
+  "border-width": {
+    "valori": ["thin", "medium", "thick"],
+    "unità": ["px", "em"]
+  },
+  "border-style": {
+    "valori": ["none", "hidden", "dotted", "dashed", "solid", "double", "groove", "ridge", "inset", "outset"],
+    "unità": []
+  },
+  "border-color": {
+    "valori": ["nome_colore", "#hex", "rgb()", "rgba()", "hsl()", "hsla()"],
+    "unità": []
+  },
+  "width": {
+    "valori": ["auto"],
+    "unità": ["px", "em", "%", "vw"]
+  },
+  "height": {
+    "valori": ["auto"],
+    "unità": ["px", "em", "%", "vh"]
+  },
+  "display": {
+    "valori": ["none", "inline", "block", "inline-block", "flex", "grid", "table", "table-row", "table-cell"],
+    "unità": []
+  },
+  "position": {
+    "valori": ["static", "relative", "absolute", "fixed", "sticky"],
+    "unità": []
+  },
+  "top": {
+    "valori": ["auto"],
+    "unità": ["px", "em", "%", "vh"]
+  },
+  "right": {
+    "valori": ["auto"],
+    "unità": ["px", "em", "%", "vw"]
+  },
+  "bottom": {
+    "valori": ["auto"],
+    "unità": ["px", "em", "%", "vh"]
+  },
+  "left": {
+    "valori": ["auto"],
+    "unità": ["px", "em", "%", "vw"]
+  },
+  "background-color": {
+    "valori": ["nome_colore", "#hex", "rgb()", "rgba()", "hsl()", "hsla()"],
+    "unità": []
+  },
+  "background-image": {
+    "valori": ["url()", "none"],
+    "unità": []
+  },
+  "background-size": {
+    "valori": ["auto", "cover", "contain"],
+    "unità": ["px", "em", "%"]
+  },
+  "background-repeat": {
+    "valori": ["repeat", "repeat-x", "repeat-y", "no-repeat"],
+    "unità": []
+  },
+  "background-position": {
+    "valori": ["left top", "left center", "left bottom", "right top", "right center", "right bottom", "center top", "center center", "center bottom"],
+    "unità": ["px", "em", "%"]
+  },
+  "overflow": {
+    "valori": ["visible", "hidden", "scroll", "auto"],
+    "unità": []
+  },
+  "z-index": {
+    "valori": ["auto", "numero_intero"],
+    "unità": []
+  },
+  "opacity": {
+    "valori": ["numero_decimale_tra_0_e_1"],
+    "unità": []
+  },
+  "text-align": {
+    "valori": ["left", "right", "center", "justify"],
+    "unità": []
+  },
+  "text-decoration": {
+    "valori": ["none", "underline", "overline", "line-through", "blink"],
+    "unità": []
+  },
+  "text-transform": {
+    "valori": ["none", "capitalize", "uppercase", "lowercase"],
+    "unità": []
+  },
+  "line-height": {
+    "valori": ["normal", "numero", "percentuale"],
+    "unità": ["px", "em", "%"]
+  },
+  "letter-spacing": {
+    "valori": ["normal"],
+    "unità": ["px", "em"]
+  },
+  "word-spacing": {
+    "valori": ["normal"],
+    "unità": ["px", "em"]
+  },
+  "font-weight": {
+    "valori": ["normal", "bold", "bolder", "lighter", "100", "200", "300", "400", "500", "600", "700", "800", "900"],
+    "unità": []
+  },
+  "font-style": {
+    "valori": ["normal", "italic", "oblique"],
+    "unità": []
+  },
+  "font-family": {
+    "valori": ["nome_font", "serif", "sans-serif", "monospace", "cursive", "fantasy"],
+    "unità": []
+  },
+  "list-style-type": {
+    "valori": ["disc", "circle", "square", "decimal", "decimal-leading-zero", "lower-roman", "upper-roman", "lower-greek", "lower-alpha", "upper-alpha", "none"],
+    "unità": []
+  },
+  "list-style-position": {
+    "valori": ["inside", "outside"],
+    "unità": []
+  },
+  "table-layout": {
+    "valori": ["auto", "fixed"],
+    "unità": []
+  },
+  "border-collapse": {
+    "valori": ["separate", "collapse"],
+    "unità": []
+  },
+  "border-spacing": {
+    "valori": [],
+    "unità": ["px", "em"]
+  },
+  "caption-side": {
+    "valori": ["top", "bottom"],
+    "unità": []
+  },
+  "empty-cells": {
+    "valori": ["show", "hide"],
+    "unità": []
+  },
+  "cursor": {
+    "valori": ["auto", "default", "pointer", "crosshair", "move", "text", "wait", "help", "not-allowed", "zoom-in", "zoom-out", "grab", "grabbing"],
+    "unità": []
+  },
+  "visibility": {
+    "valori": ["visible", "hidden", "collapse"],
+    "unità": []
+  },
+  "box-shadow": {
+    "valori": ["none"],
+    "unità": ["px"]
+  }
+}
