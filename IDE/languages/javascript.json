@@ -1,1 +1,184 @@
-
+{
+  "objects": {
+    "Array": {
+      "description": "Represents a list-like collection of elements",
+      "methods": [
+        {"name": "concat", "description": "Merges two or more arrays", "parameters": ["...arrays"], "returns": "Array"},
+        {"name": "filter", "description": "Creates a new array with elements that pass a test", "parameters": ["callback(element, index, array)"], "returns": "Array"},
+        {"name": "forEach", "description": "Executes a function for each array element", "parameters": ["callback(element, index, array)"], "returns": "undefined"},
+        {"name": "includes", "description": "Checks if an array includes a value", "parameters": ["value", "fromIndex?"], "returns": "boolean"},
+        {"name": "indexOf", "description": "Returns the first index of a value", "parameters": ["value", "fromIndex?"], "returns": "number"},
+        {"name": "join", "description": "Joins array elements into a string", "parameters": ["separator?"], "returns": "string"},
+        {"name": "map", "description": "Creates a new array with results of calling a function", "parameters": ["callback(element, index, array)"], "returns": "Array"},
+        {"name": "pop", "description": "Removes and returns the last element", "parameters": [], "returns": "any"},
+        {"name": "push", "description": "Adds elements to the end of the array", "parameters": ["...elements"], "returns": "number"},
+        {"name": "reduce", "description": "Reduces array to a single value", "parameters": ["callback(accumulator, element, index, array)", "initialValue?"], "returns": "any"},
+        {"name": "shift", "description": "Removes and returns the first element", "parameters": [], "returns": "any"},
+        {"name": "slice", "description": "Returns a shallow copy of a portion of the array", "parameters": ["start?", "end?"], "returns": "Array"},
+        {"name": "sort", "description": "Sorts the array", "parameters": ["compareFunction?"], "returns": "Array"},
+        {"name": "splice", "description": "Adds/removes elements from the array", "parameters": ["start", "deleteCount?", "...items"], "returns": "Array"}
+      ],
+      "properties": [
+        {"name": "length", "description": "Number of elements in the array", "type": "number"}
+      ]
+    },
+    "Boolean": {
+      "description": "Represents a true/false value",
+      "methods": [
+        {"name": "toString", "description": "Converts boolean to string", "parameters": [], "returns": "string"}
+      ]
+    },
+    "console": {
+      "description": "Provides methods for logging to the console",
+      "methods": [
+        {"name": "log", "description": "Logs a message", "parameters": ["...args"], "returns": "undefined"},
+        {"name": "error", "description": "Logs an error message", "parameters": ["...args"], "returns": "undefined"},
+        {"name": "warn", "description": "Logs a warning message", "parameters": ["...args"], "returns": "undefined"},
+        {"name": "info", "description": "Logs an info message", "parameters": ["...args"], "returns": "undefined"},
+        {"name": "clear", "description": "Clears the console", "parameters": [], "returns": "undefined"}
+      ]
+    },
+    "Date": {
+      "description": "Represents a date and time",
+      "methods": [
+        {"name": "getDate", "description": "Returns the day of the month (1-31)", "parameters": [], "returns": "number"},
+        {"name": "getFullYear", "description": "Returns the year", "parameters": [], "returns": "number"},
+        {"name": "getHours", "description": "Returns the hour (0-23)", "parameters": [], "returns": "number"},
+        {"name": "getMinutes", "description": "Returns the minutes (0-59)", "parameters": [], "returns": "number"},
+        {"name": "getSeconds", "description": "Returns the seconds (0-59)", "parameters": [], "returns": "number"},
+        {"name": "toISOString", "description": "Returns date as ISO string", "parameters": [], "returns": "string"},
+        {"name": "toLocaleString", "description": "Returns date as localized string", "parameters": ["locales?", "options?"], "returns": "string"}
+      ]
+    },
+    "document": {
+      "description": "Represents the HTML document",
+      "methods": [
+        {"name": "createElement", "description": "Creates an HTML element", "parameters": ["tagName"], "returns": "HTMLElement"},
+        {"name": "getElementById", "description": "Returns an element by ID", "parameters": ["id"], "returns": "HTMLElement | null"},
+        {"name": "getElementsByClassName", "description": "Returns elements by class name", "parameters": ["className"], "returns": "HTMLCollection"},
+        {"name": "getElementsByTagName", "description": "Returns elements by tag name", "parameters": ["tagName"], "returns": "HTMLCollection"},
+        {"name": "querySelector", "description": "Returns the first element matching a CSS selector", "parameters": ["selector"], "returns": "Element | null"},
+        {"name": "querySelectorAll", "description": "Returns all elements matching a CSS selector", "parameters": ["selector"], "returns": "NodeList"}
+      ],
+      "properties": [
+        {"name": "body", "description": "The <body> element", "type": "HTMLElement"},
+        {"name": "title", "description": "The document title", "type": "string"}
+      ]
+    },
+    "Element": {
+      "description": "Base interface for DOM elements",
+      "methods": [
+        {"name": "addEventListener", "description": "Attaches an event listener", "parameters": ["event", "callback", "options?"], "returns": "undefined"},
+        {"name": "classList.add", "description": "Adds a class to the element", "parameters": ["...classNames"], "returns": "undefined"},
+        {"name": "classList.remove", "description": "Removes a class from the element", "parameters": ["...classNames"], "returns": "undefined"},
+        {"name": "classList.toggle", "description": "Toggles a class on/off", "parameters": ["className", "force?"], "returns": "boolean"},
+        {"name": "getAttribute", "description": "Gets an attribute value", "parameters": ["name"], "returns": "string | null"},
+        {"name": "remove", "description": "Removes the element from the DOM", "parameters": [], "returns": "undefined"},
+        {"name": "setAttribute", "description": "Sets an attribute value", "parameters": ["name", "value"], "returns": "undefined"}
+      ],
+      "properties": [
+        {"name": "className", "description": "The element’s class attribute", "type": "string"},
+        {"name": "id", "description": "The element’s ID", "type": "string"},
+        {"name": "innerHTML", "description": "The HTML content inside the element", "type": "string"}
+      ]
+    },
+    "fetch": {
+      "description": "Fetches resources from the network",
+      "methods": [
+        {"name": "fetch", "description": "Makes an HTTP request", "parameters": ["url", "options?"], "returns": "Promise<Response>"}
+      ]
+    },
+    "HTMLElement": {
+      "description": "Represents an HTML element",
+      "properties": [
+        {"name": "style", "description": "Inline CSS styles", "type": "CSSStyleDeclaration"},
+        {"name": "textContent", "description": "Text content of the element", "type": "string"}
+      ]
+    },
+    "Math": {
+      "description": "Provides mathematical functions and constants",
+      "methods": [
+        {"name": "abs", "description": "Returns the absolute value", "parameters": ["x"], "returns": "number"},
+        {"name": "ceil", "description": "Rounds up to the nearest integer", "parameters": ["x"], "returns": "number"},
+        {"name": "floor", "description": "Rounds down to the nearest integer", "parameters": ["x"], "returns": "number"},
+        {"name": "max", "description": "Returns the largest of the given numbers", "parameters": ["...numbers"], "returns": "number"},
+        {"name": "min", "description": "Returns the smallest of the given numbers", "parameters": ["...numbers"], "returns": "number"},
+        {"name": "random", "description": "Returns a random number between 0 and 1", "parameters": [], "returns": "number"},
+        {"name": "round", "description": "Rounds to the nearest integer", "parameters": ["x"], "returns": "number"}
+      ],
+      "properties": [
+        {"name": "PI", "description": "The mathematical constant π (3.14159...)", "type": "number"}
+      ]
+    },
+    "Number": {
+      "description": "Represents a numeric value",
+      "methods": [
+        {"name": "toFixed", "description": "Formats a number with a fixed number of decimals", "parameters": ["digits"], "returns": "string"},
+        {"name": "toString", "description": "Converts number to string", "parameters": ["radix?"], "returns": "string"}
+      ]
+    },
+    "Object": {
+      "description": "Base object for all JavaScript objects",
+      "methods": [
+        {"name": "keys", "description": "Returns an array of object’s enumerable property names", "parameters": ["object"], "returns": "Array"},
+        {"name": "values", "description": "Returns an array of object’s enumerable property values", "parameters": ["object"], "returns": "Array"},
+        {"name": "entries", "description": "Returns an array of object’s enumerable key-value pairs", "parameters": ["object"], "returns": "Array"}
+      ]
+    },
+    "Promise": {
+      "description": "Represents an asynchronous operation",
+      "methods": [
+        {"name": "then", "description": "Handles resolved value", "parameters": ["onFulfilled", "onRejected?"], "returns": "Promise"},
+        {"name": "catch", "description": "Handles rejected value", "parameters": ["onRejected"], "returns": "Promise"},
+        {"name": "finally", "description": "Runs after promise settles", "parameters": ["onFinally"], "returns": "Promise"}
+      ]
+    },
+    "String": {
+      "description": "Represents a sequence of characters",
+      "methods": [
+        {"name": "charAt", "description": "Returns the character at an index", "parameters": ["index"], "returns": "string"},
+        {"name": "includes", "description": "Checks if string contains a substring", "parameters": ["searchString", "position?"], "returns": "boolean"},
+        {"name": "indexOf", "description": "Returns the first index of a substring", "parameters": ["searchString", "position?"], "returns": "number"},
+        {"name": "replace", "description": "Replaces a substring with another", "parameters": ["searchValue", "replaceValue"], "returns": "string"},
+        {"name": "slice", "description": "Extracts a section of the string", "parameters": ["start?", "end?"], "returns": "string"},
+        {"name": "split", "description": "Splits string into an array", "parameters": ["separator", "limit?"], "returns": "Array"},
+        {"name": "substring", "description": "Returns a subset of the string", "parameters": ["start", "end?"], "returns": "string"},
+        {"name": "toLowerCase", "description": "Converts string to lowercase", "parameters": [], "returns": "string"},
+        {"name": "toUpperCase", "description": "Converts string to uppercase", "parameters": [], "returns": "string"},
+        {"name": "trim", "description": "Removes whitespace from both ends", "parameters": [], "returns": "string"}
+      ],
+      "properties": [
+        {"name": "length", "description": "Number of characters in the string", "type": "number"}
+      ]
+    },
+    "window": {
+      "description": "Represents the browser window",
+      "methods": [
+        {"name": "alert", "description": "Displays an alert dialog", "parameters": ["message"], "returns": "undefined"},
+        {"name": "confirm", "description": "Displays a confirmation dialog", "parameters": ["message"], "returns": "boolean"},
+        {"name": "prompt", "description": "Displays a prompt dialog", "parameters": ["message", "default?"], "returns": "string | null"},
+        {"name": "setTimeout", "description": "Executes a function after a delay", "parameters": ["callback", "delay", "...args"], "returns": "number"},
+        {"name": "setInterval", "description": "Executes a function repeatedly", "parameters": ["callback", "delay", "...args"], "returns": "number"},
+        {"name": "clearTimeout", "description": "Cancels a timeout", "parameters": ["id"], "returns": "undefined"},
+        {"name": "clearInterval", "description": "Cancels an interval", "parameters": ["id"], "returns": "undefined"}
+      ],
+      "properties": [
+        {"name": "location", "description": "The current URL", "type": "Location"},
+        {"name": "navigator", "description": "Browser information", "type": "Navigator"}
+      ]
+    }
+  },
+  "events": {
+    "description": "Common DOM event types",
+    "types": [
+      {"name": "click", "description": "Fires when an element is clicked"},
+      {"name": "mouseover", "description": "Fires when the mouse hovers over an element"},
+      {"name": "mouseout", "description": "Fires when the mouse leaves an element"},
+      {"name": "keydown", "description": "Fires when a key is pressed"},
+      {"name": "keyup", "description": "Fires when a key is released"},
+      {"name": "change", "description": "Fires when an input value changes"},
+      {"name": "submit", "description": "Fires when a form is submitted"},
+      {"name": "load", "description": "Fires when a resource finishes loading"}
+    ]
+  }
+}
