@@ -1,170 +1,623 @@
 {
-  "color": {
-    "valori": ["nome_colore", "#hex", "rgb()", "rgba()", "hsl()", "hsla()"],
-    "unità": []
-  },
-  "font-size": {
-    "valori": ["xx-small", "x-small", "small", "medium", "large", "x-large", "xx-large", "larger", "smaller"],
-    "unità": ["em", "rem", "px", "%"]
-  },
-  "margin": {
-    "valori": ["auto"],
-    "unità": ["em", "rem", "px", "%"]
-  },
-  "padding": {
-    "valori": [],
-    "unità": ["em", "rem", "px", "%"]
-  },
-  "border-width": {
-    "valori": ["thin", "medium", "thick"],
-    "unità": ["px", "em"]
-  },
-  "border-style": {
-    "valori": ["none", "hidden", "dotted", "dashed", "solid", "double", "groove", "ridge", "inset", "outset"],
-    "unità": []
-  },
-  "border-color": {
-    "valori": ["nome_colore", "#hex", "rgb()", "rgba()", "hsl()", "hsla()"],
-    "unità": []
-  },
-  "width": {
-    "valori": ["auto"],
-    "unità": ["px", "em", "%", "vw"]
-  },
-  "height": {
-    "valori": ["auto"],
-    "unità": ["px", "em", "%", "vh"]
-  },
-  "display": {
-    "valori": ["none", "inline", "block", "inline-block", "flex", "grid", "table", "table-row", "table-cell"],
-    "unità": []
-  },
-  "position": {
-    "valori": ["static", "relative", "absolute", "fixed", "sticky"],
-    "unità": []
-  },
-  "top": {
-    "valori": ["auto"],
-    "unità": ["px", "em", "%", "vh"]
-  },
-  "right": {
-    "valori": ["auto"],
-    "unità": ["px", "em", "%", "vw"]
-  },
-  "bottom": {
-    "valori": ["auto"],
-    "unità": ["px", "em", "%", "vh"]
-  },
-  "left": {
-    "valori": ["auto"],
-    "unità": ["px", "em", "%", "vw"]
-  },
-  "background-color": {
-    "valori": ["nome_colore", "#hex", "rgb()", "rgba()", "hsl()", "hsla()"],
-    "unità": []
-  },
-  "background-image": {
-    "valori": ["url()", "none"],
-    "unità": []
-  },
-  "background-size": {
-    "valori": ["auto", "cover", "contain"],
-    "unità": ["px", "em", "%"]
-  },
-  "background-repeat": {
-    "valori": ["repeat", "repeat-x", "repeat-y", "no-repeat"],
-    "unità": []
-  },
-  "background-position": {
-    "valori": ["left top", "left center", "left bottom", "right top", "right center", "right bottom", "center top", "center center", "center bottom"],
-    "unità": ["px", "em", "%"]
-  },
-  "overflow": {
-    "valori": ["visible", "hidden", "scroll", "auto"],
-    "unità": []
-  },
-  "z-index": {
-    "valori": ["auto", "numero_intero"],
-    "unità": []
-  },
-  "opacity": {
-    "valori": ["numero_decimale_tra_0_e_1"],
-    "unità": []
-  },
-  "text-align": {
-    "valori": ["left", "right", "center", "justify"],
-    "unità": []
-  },
-  "text-decoration": {
-    "valori": ["none", "underline", "overline", "line-through", "blink"],
-    "unità": []
-  },
-  "text-transform": {
-    "valori": ["none", "capitalize", "uppercase", "lowercase"],
-    "unità": []
-  },
-  "line-height": {
-    "valori": ["normal", "numero", "percentuale"],
-    "unità": ["px", "em", "%"]
-  },
-  "letter-spacing": {
-    "valori": ["normal"],
-    "unità": ["px", "em"]
-  },
-  "word-spacing": {
-    "valori": ["normal"],
-    "unità": ["px", "em"]
-  },
-  "font-weight": {
-    "valori": ["normal", "bold", "bolder", "lighter", "100", "200", "300", "400", "500", "600", "700", "800", "900"],
-    "unità": []
-  },
-  "font-style": {
-    "valori": ["normal", "italic", "oblique"],
-    "unità": []
-  },
-  "font-family": {
-    "valori": ["nome_font", "serif", "sans-serif", "monospace", "cursive", "fantasy"],
-    "unità": []
-  },
-  "list-style-type": {
-    "valori": ["disc", "circle", "square", "decimal", "decimal-leading-zero", "lower-roman", "upper-roman", "lower-greek", "lower-alpha", "upper-alpha", "none"],
-    "unità": []
-  },
-  "list-style-position": {
-    "valori": ["inside", "outside"],
-    "unità": []
-  },
-  "table-layout": {
-    "valori": ["auto", "fixed"],
-    "unità": []
-  },
-  "border-collapse": {
-    "valori": ["separate", "collapse"],
-    "unità": []
-  },
-  "border-spacing": {
-    "valori": [],
-    "unità": ["px", "em"]
-  },
-  "caption-side": {
-    "valori": ["top", "bottom"],
-    "unità": []
-  },
-  "empty-cells": {
-    "valori": ["show", "hide"],
-    "unità": []
-  },
-  "cursor": {
-    "valori": ["auto", "default", "pointer", "crosshair", "move", "text", "wait", "help", "not-allowed", "zoom-in", "zoom-out", "grab", "grabbing"],
-    "unità": []
-  },
-  "visibility": {
-    "valori": ["visible", "hidden", "collapse"],
-    "unità": []
-  },
-  "box-shadow": {
-    "valori": ["none"],
-    "unità": ["px"]
+  "properties": {
+    "align-content": {
+      "description": "Aligns flex or grid container’s items when there’s extra space on the cross-axis",
+      "values": ["stretch", "center", "flex-start", "flex-end", "space-between", "space-around", "space-evenly"]
+    },
+    "align-items": {
+      "description": "Aligns flex or grid items along the cross-axis",
+      "values": ["stretch", "center", "flex-start", "flex-end", "baseline"]
+    },
+    "align-self": {
+      "description": "Overrides align-items for a specific flex or grid item",
+      "values": ["auto", "stretch", "center", "flex-start", "flex-end", "baseline"]
+    },
+    "animation": {
+      "description": "Shorthand for animation properties",
+      "values": ["<animation-name>", "<time>", "ease", "linear", "infinite", "<animation-direction>", "<animation-fill-mode>"]
+    },
+    "animation-delay": {
+      "description": "Sets delay before an animation starts",
+      "values": ["<time> (e.g., 2s, 500ms)"]
+    },
+    "animation-direction": {
+      "description": "Defines the direction of animation playback",
+      "values": ["normal", "reverse", "alternate", "alternate-reverse"]
+    },
+    "animation-duration": {
+      "description": "Sets the duration of an animation",
+      "values": ["<time> (e.g., 2s, 500ms)"]
+    },
+    "animation-fill-mode": {
+      "description": "Specifies how an animation applies styles before/after execution",
+      "values": ["none", "forwards", "backwards", "both"]
+    },
+    "animation-iteration-count": {
+      "description": "Sets the number of times an animation repeats",
+      "values": ["<number>", "infinite"]
+    },
+    "animation-name": {
+      "description": "Specifies the name of the @keyframes animation",
+      "values": ["<custom-ident>"]
+    },
+    "animation-play-state": {
+      "description": "Controls whether an animation is running or paused",
+      "values": ["running", "paused"]
+    },
+    "animation-timing-function": {
+      "description": "Defines the speed curve of an animation",
+      "values": ["ease", "linear", "ease-in", "ease-out", "ease-in-out", "step-start", "step-end"]
+    },
+    "background": {
+      "description": "Shorthand for background properties",
+      "values": ["<color>", "<image>", "<position>", "<size>", "<repeat>", "<attachment>", "<origin>", "<clip>"]
+    },
+    "background-attachment": {
+      "description": "Sets whether a background image scrolls with the content",
+      "values": ["scroll", "fixed", "local"]
+    },
+    "background-clip": {
+      "description": "Defines how far the background extends within an element",
+      "values": ["border-box", "padding-box", "content-box"]
+    },
+    "background-color": {
+      "description": "Sets the background color of an element",
+      "values": ["<color> (e.g., red, #fff, rgba(255, 0, 0, 0.5))"]
+    },
+    "background-image": {
+      "description": "Sets a background image",
+      "values": ["url(<image-url>)", "none"]
+    },
+    "background-origin": {
+      "description": "Specifies the origin position of a background image",
+      "values": ["border-box", "padding-box", "content-box"]
+    },
+    "background-position": {
+      "description": "Sets the starting position of a background image",
+      "values": ["top", "bottom", "left", "right", "center", "<length>", "<percentage>"]
+    },
+    "background-repeat": {
+      "description": "Controls how a background image repeats",
+      "values": ["repeat", "repeat-x", "repeat-y", "no-repeat", "space", "round"]
+    },
+    "background-size": {
+      "description": "Specifies the size of a background image",
+      "values": ["auto", "<length>", "<percentage>", "cover", "contain"]
+    },
+    "border": {
+      "description": "Shorthand for border properties",
+      "values": ["<width>", "<style>", "<color>"]
+    },
+    "border-bottom": {
+      "description": "Shorthand for bottom border properties",
+      "values": ["<width>", "<style>", "<color>"]
+    },
+    "border-bottom-color": {
+      "description": "Sets the color of the bottom border",
+      "values": ["<color>"]
+    },
+    "border-bottom-style": {
+      "description": "Sets the style of the bottom border",
+      "values": ["none", "solid", "dashed", "dotted", "double", "groove", "ridge", "inset", "outset"]
+    },
+    "border-bottom-width": {
+      "description": "Sets the width of the bottom border",
+      "values": ["<length> (e.g., 1px, 0.5em)", "thin", "medium", "thick"]
+    },
+    "border-color": {
+      "description": "Sets the color of all borders",
+      "values": ["<color>"]
+    },
+    "border-left": {
+      "description": "Shorthand for left border properties",
+      "values": ["<width>", "<style>", "<color>"]
+    },
+    "border-left-color": {
+      "description": "Sets the color of the left border",
+      "values": ["<color>"]
+    },
+    "border-left-style": {
+      "description": "Sets the style of the left border",
+      "values": ["none", "solid", "dashed", "dotted", "double", "groove", "ridge", "inset", "outset"]
+    },
+    "border-left-width": {
+      "description": "Sets the width of the left border",
+      "values": ["<length>", "thin", "medium", "thick"]
+    },
+    "border-radius": {
+      "description": "Rounds the corners of an element",
+      "values": ["<length>", "<percentage>"]
+    },
+    "border-right": {
+      "description": "Shorthand for right border properties",
+      "values": ["<width>", "<style>", "<color>"]
+    },
+    "border-right-color": {
+      "description": "Sets the color of the right border",
+      "values": ["<color>"]
+    },
+    "border-right-style": {
+      "description": "Sets the style of the right border",
+      "values": ["none", "solid", "dashed", "dotted", "double", "groove", "ridge", "inset", "outset"]
+    },
+    "border-right-width": {
+      "description": "Sets the width of the right border",
+      "values": ["<length>", "thin", "medium", "thick"]
+    },
+    "border-style": {
+      "description": "Sets the style of all borders",
+      "values": ["none", "solid", "dashed", "dotted", "double", "groove", "ridge", "inset", "outset"]
+    },
+    "border-top": {
+      "description": "Shorthand for top border properties",
+      "values": ["<width>", "<style>", "<color>"]
+    },
+    "border-top-color": {
+      "description": "Sets the color of the top border",
+      "values": ["<color>"]
+    },
+    "border-top-style": {
+      "description": "Sets the style of the top border",
+      "values": ["none", "solid", "dashed", "dotted", "double", "groove", "ridge", "inset", "outset"]
+    },
+    "border-top-width": {
+      "description": "Sets the width of the top border",
+      "values": ["<length>", "thin", "medium", "thick"]
+    },
+    "border-width": {
+      "description": "Sets the width of all borders",
+      "values": ["<length>", "thin", "medium", "thick"]
+    },
+    "bottom": {
+      "description": "Sets the position of an element from the bottom",
+      "values": ["<length>", "<percentage>", "auto"]
+    },
+    "box-shadow": {
+      "description": "Adds shadow effects to an element",
+      "values": ["<offset-x> <offset-y> <blur-radius> <spread-radius> <color>", "inset"]
+    },
+    "box-sizing": {
+      "description": "Defines how the box model calculates width and height",
+      "values": ["content-box", "border-box"]
+    },
+    "clear": {
+      "description": "Specifies which sides of an element floating elements are not allowed",
+      "values": ["none", "left", "right", "both"]
+    },
+    "clip": {
+      "description": "Clips an absolutely positioned element (deprecated in favor of clip-path)",
+      "values": ["rect(<top>, <right>, <bottom>, <left>)", "auto"],
+      "deprecated": true
+    },
+    "color": {
+      "description": "Sets the text color",
+      "values": ["<color> (e.g., red, #fff, rgb(255, 0, 0))"]
+    },
+    "column-count": {
+      "description": "Specifies the number of columns in a multi-column layout",
+      "values": ["<number>", "auto"]
+    },
+    "column-gap": {
+      "description": "Sets the gap between columns",
+      "values": ["<length>", "normal"]
+    },
+    "column-rule": {
+      "description": "Shorthand for column rule properties",
+      "values": ["<width>", "<style>", "<color>"]
+    },
+    "column-rule-color": {
+      "description": "Sets the color of the column rule",
+      "values": ["<color>"]
+    },
+    "column-rule-style": {
+      "description": "Sets the style of the column rule",
+      "values": ["none", "solid", "dashed", "dotted", "double", "groove", "ridge", "inset", "outset"]
+    },
+    "column-rule-width": {
+      "description": "Sets the width of the column rule",
+      "values": ["<length>", "thin", "medium", "thick"]
+    },
+    "column-span": {
+      "description": "Specifies how many columns an element spans",
+      "values": ["none", "all"]
+    },
+    "column-width": {
+      "description": "Sets the minimum width of columns",
+      "values": ["<length>", "auto"]
+    },
+    "columns": {
+      "description": "Shorthand for column-width and column-count",
+      "values": ["<column-width>", "<column-count>"]
+    },
+    "cursor": {
+      "description": "Specifies the mouse cursor style",
+      "values": ["auto", "default", "pointer", "text", "move", "not-allowed", "wait", "url(<image>)"]
+    },
+    "direction": {
+      "description": "Sets the text direction",
+      "values": ["ltr", "rtl"]
+    },
+    "display": {
+      "description": "Specifies the display behavior of an element",
+      "values": ["block", "inline", "inline-block", "none", "flex", "grid", "table", "list-item"]
+    },
+    "filter": {
+      "description": "Applies graphical effects like blur or color shift",
+      "values": ["blur(<length>)", "brightness(<percentage>)", "contrast(<percentage>)", "grayscale(<percentage>)", "none"]
+    },
+    "flex": {
+      "description": "Shorthand for flex-grow, flex-shrink, and flex-basis",
+      "values": ["<flex-grow>", "<flex-shrink>", "<flex-basis>"]
+    },
+    "flex-basis": {
+      "description": "Sets the initial size of a flex item",
+      "values": ["<length>", "<percentage>", "auto", "content"]
+    },
+    "flex-direction": {
+      "description": "Defines the main axis direction of a flex container",
+      "values": ["row", "row-reverse", "column", "column-reverse"]
+    },
+    "flex-flow": {
+      "description": "Shorthand for flex-direction and flex-wrap",
+      "values": ["<flex-direction>", "<flex-wrap>"]
+    },
+    "flex-grow": {
+      "description": "Specifies how much a flex item will grow",
+      "values": ["<number>"]
+    },
+    "flex-shrink": {
+      "description": "Specifies how much a flex item will shrink",
+      "values": ["<number>"]
+    },
+    "flex-wrap": {
+      "description": "Controls whether flex items wrap onto new lines",
+      "values": ["nowrap", "wrap", "wrap-reverse"]
+    },
+    "float": {
+      "description": "Specifies whether an element floats",
+      "values": ["left", "right", "none"]
+    },
+    "font": {
+      "description": "Shorthand for font properties",
+      "values": ["<font-style>", "<font-weight>", "<font-size>", "<font-family>"]
+    },
+    "font-family": {
+      "description": "Specifies the font family for text",
+      "values": ["<family-name> (e.g., Arial, 'Times New Roman')", "sans-serif", "serif", "monospace"]
+    },
+    "font-size": {
+      "description": "Sets the size of the font",
+      "values": ["<length> (e.g., 16px, 1em)", "<percentage>", "small", "medium", "large"]
+    },
+    "font-style": {
+      "description": "Sets the style of the font",
+      "values": ["normal", "italic", "oblique"]
+    },
+    "font-weight": {
+      "description": "Sets the weight (boldness) of the font",
+      "values": ["normal", "bold", "bolder", "lighter", "100", "200", "300", "400", "500", "600", "700", "800", "900"]
+    },
+    "gap": {
+      "description": "Sets the gap between flex or grid items",
+      "values": ["<length>", "<percentage>"]
+    },
+    "grid": {
+      "description": "Shorthand for grid properties",
+      "values": ["<grid-template-rows>", "<grid-template-columns>", "<grid-template-areas>", "<grid-auto-rows>", "<grid-auto-columns>", "<grid-auto-flow>"]
+    },
+    "grid-area": {
+      "description": "Specifies a grid item’s size and location",
+      "values": ["<grid-row-start>", "<grid-column-start>", "<grid-row-end>", "<grid-column-end>"]
+    },
+    "grid-auto-columns": {
+      "description": "Sets the size of implicitly created grid columns",
+      "values": ["<length>", "<percentage>", "auto"]
+    },
+    "grid-auto-flow": {
+      "description": "Controls how auto-placed grid items are arranged",
+      "values": ["row", "column", "dense"]
+    },
+    "grid-auto-rows": {
+      "description": "Sets the size of implicitly created grid rows",
+      "values": ["<length>", "<percentage>", "auto"]
+    },
+    "grid-column": {
+      "description": "Shorthand for grid-column-start and grid-column-end",
+      "values": ["<start-line> / <end-line>"]
+    },
+    "grid-column-end": {
+      "description": "Specifies where a grid item ends on the column axis",
+      "values": ["<number>", "span <number>"]
+    },
+    "grid-column-start": {
+      "description": "Specifies where a grid item starts on the column axis",
+      "values": ["<number>", "span <number>"]
+    },
+    "grid-row": {
+      "description": "Shorthand for grid-row-start and grid-row-end",
+      "values": ["<start-line> / <end-line>"]
+    },
+    "grid-row-end": {
+      "description": "Specifies where a grid item ends on the row axis",
+      "values": ["<number>", "span <number>"]
+    },
+    "grid-row-start": {
+      "description": "Specifies where a grid item starts on the row axis",
+      "values": ["<number>", "span <number>"]
+    },
+    "grid-template": {
+      "description": "Shorthand for grid-template-rows, columns, and areas",
+      "values": ["<grid-template-rows>", "<grid-template-columns>", "<grid-template-areas>"]
+    },
+    "grid-template-areas": {
+      "description": "Defines named grid areas",
+      "values": ["<string> (e.g., 'header header' 'main sidebar')"]
+    },
+    "grid-template-columns": {
+      "description": "Defines the columns of a grid layout",
+      "values": ["<length>", "<percentage>", "fr", "auto", "repeat(<number>, <size>)"]
+    },
+    "grid-template-rows": {
+      "description": "Defines the rows of a grid layout",
+      "values": ["<length>", "<percentage>", "fr", "auto", "repeat(<number>, <size>)"]
+    },
+    "height": {
+      "description": "Sets the height of an element",
+      "values": ["<length>", "<percentage>", "auto"]
+    },
+    "justify-content": {
+      "description": "Aligns flex or grid items along the main axis",
+      "values": ["flex-start", "flex-end", "center", "space-between", "space-around", "space-evenly"]
+    },
+    "justify-items": {
+      "description": "Aligns grid items along the inline (row) axis",
+      "values": ["start", "end", "center", "stretch"]
+    },
+    "justify-self": {
+      "description": "Overrides justify-items for a specific grid item",
+      "values": ["auto", "start", "end", "center", "stretch"]
+    },
+    "left": {
+      "description": "Sets the position of an element from the left",
+      "values": ["<length>", "<percentage>", "auto"]
+    },
+    "letter-spacing": {
+      "description": "Sets the spacing between characters",
+      "values": ["<length> (e.g., 1px, 0.1em)", "normal"]
+    },
+    "line-height": {
+      "description": "Sets the height of a line",
+      "values": ["<number>", "<length>", "<percentage>", "normal"]
+    },
+    "list-style": {
+      "description": "Shorthand for list-style properties",
+      "values": ["<list-style-type>", "<list-style-position>", "<list-style-image>"]
+    },
+    "list-style-image": {
+      "description": "Sets an image as the list item marker",
+      "values": ["url(<image-url>)", "none"]
+    },
+    "list-style-position": {
+      "description": "Sets the position of the list marker",
+      "values": ["inside", "outside"]
+    },
+    "list-style-type": {
+      "description": "Sets the type of list marker",
+      "values": ["disc", "circle", "square", "decimal", "lower-roman", "upper-roman", "none"]
+    },
+    "margin": {
+      "description": "Sets the outer spacing around an element",
+      "values": ["<length>", "<percentage>", "auto"]
+    },
+    "margin-bottom": {
+      "description": "Sets the bottom margin",
+      "values": ["<length>", "<percentage>", "auto"]
+    },
+    "margin-left": {
+      "description": "Sets the left margin",
+      "values": ["<length>", "<percentage>", "auto"]
+    },
+    "margin-right": {
+      "description": "Sets the right margin",
+      "values": ["<length>", "<percentage>", "auto"]
+    },
+    "margin-top": {
+      "description": "Sets the top margin",
+      "values": ["<length>", "<percentage>", "auto"]
+    },
+    "max-height": {
+      "description": "Sets the maximum height of an element",
+      "values": ["<length>", "<percentage>", "none"]
+    },
+    "max-width": {
+      "description": "Sets the maximum width of an element",
+      "values": ["<length>", "<percentage>", "none"]
+    },
+    "min-height": {
+      "description": "Sets the minimum height of an element",
+      "values": ["<length>", "<percentage>", "auto"]
+    },
+    "min-width": {
+      "description": "Sets the minimum width of an element",
+      "values": ["<length>", "<percentage>", "auto"]
+    },
+    "object-fit": {
+      "description": "Specifies how an image or video fits its container",
+      "values": ["fill", "contain", "cover", "none", "scale-down"]
+   entina": "Sets opacity (transparency) of an element",
+      "values": ["<number> (0 to 1, e.g., 0.5)"]
+    },
+    "order": {
+      "description": "Sets the order of a flex or grid item",
+      "values": ["<number>"]
+    },
+    "outline": {
+      "description": "Shorthand for outline properties",
+      "values": ["<width>", "<style>", "<color>"]
+    },
+    "outline-color": {
+      "description": "Sets the color of an outline",
+      "values": ["<color>"]
+    },
+    "outline-style": {
+      "description": "Sets the style of an outline",
+      "values": ["none", "solid", "dashed", "dotted", "double"]
+    },
+    "outline-width": {
+      "description": "Sets the width of an outline",
+      "values": ["<length>", "thin", "medium", "thick"]
+    },
+    "overflow": {
+      "description": "Specifies how overflowing content is handled",
+      "values": ["visible", "hidden", "scroll", "auto"]
+    },
+    "overflow-x": {
+      "description": "Specifies horizontal overflow behavior",
+      "values": ["visible", "hidden", "scroll", "auto"]
+    },
+    "overflow-y": {
+      "description": "Specifies vertical overflow behavior",
+      "values": ["visible", "hidden", "scroll", "auto"]
+    },
+    "padding": {
+      "description": "Sets the inner spacing within an element",
+      "values": ["<length>", "<percentage>"]
+    },
+    "padding-bottom": {
+      "description": "Sets the bottom padding",
+      "values": ["<length>", "<percentage>"]
+    },
+    "padding-left": {
+      "description": "Sets the left padding",
+      "values": ["<length>", "<percentage>"]
+    },
+    "padding-right": {
+      "description": "Sets the right padding",
+      "values": ["<length>", "<percentage>"]
+    },
+    "padding-top": {
+      "description": "Sets the top padding",
+      "values": ["<length>", "<percentage>"]
+    },
+    "perspective": {
+      "description": "Sets the perspective depth for 3D transforms",
+      "values": ["<length>"]
+    },
+    "pointer-events": {
+      "description": "Controls whether an element responds to pointer events",
+      "values": ["auto", "none"]
+    },
+    "position": {
+      "description": "Specifies the positioning method",
+      "values": ["static", "relative", "absolute", "fixed", "sticky"]
+    },
+    "resize": {
+      "description": "Controls whether an element is resizable",
+      "values": ["none", "both", "horizontal", "vertical"]
+    },
+    "right": {
+      "description": "Sets the position of an element from the right",
+      "values": ["<length>", "<percentage>", "auto"]
+    },
+    "row-gap": {
+      "description": "Sets the gap between grid rows",
+      "values": ["<length>", "<percentage>"]
+    },
+    "scroll-behavior": {
+      "description": "Controls the scrolling behavior",
+      "values": ["auto", "smooth"]
+    },
+    "text-align": {
+      "description": "Sets the horizontal alignment of text",
+      "values": ["left", "right", "center", "justify"]
+    },
+    "text-decoration": {
+      "description": "Shorthand for text decoration properties",
+      "values": ["none", "underline", "overline", "line-through"]
+    },
+    "text-decoration-color": {
+      "description": "Sets the color of text decoration",
+      "values": ["<color>"]
+    },
+    "text-decoration-line": {
+      "description": "Specifies the type of text decoration",
+      "values": ["none", "underline", "overline", "line-through"]
+    },
+    "text-decoration-style": {
+      "description": "Sets the style of text decoration",
+      "values": ["solid", "double", "dotted", "dashed", "wavy"]
+    },
+    "text-indent": {
+      "description": "Sets the indentation of the first line",
+      "values": ["<length>", "<percentage>"]
+    },
+    "text-overflow": {
+      "description": "Specifies how overflowed text is displayed",
+      "values": ["clip", "ellipsis"]
+    },
+    "text-transform": {
+      "description": "Controls the capitalization of text",
+      "values": ["none", "capitalize", "uppercase", "lowercase"]
+    },
+    "top": {
+      "description": "Sets the position of an element from the top",
+      "values": ["<length>", "<percentage>", "auto"]
+    },
+    "transform": {
+      "description": "Applies a 2D or 3D transformation",
+      "values": ["translate(<x>, <y>)", "rotate(<angle>)", "scale(<x>, <y>)", "skew(<x-angle>, <y-angle>)"]
+    },
+    "transform-origin": {
+      "description": "Sets the origin point of a transformation",
+      "values": ["<length>", "<percentage>", "top", "bottom", "left", "right", "center"]
+    },
+    "transition": {
+      "description": "Shorthand for transition properties",
+      "values": ["<property>", "<duration>", "<timing-function>", "<delay>"]
+    },
+    "transition-delay": {
+      "description": "Sets the delay before a transition starts",
+      "values": ["<time> (e.g., 2s, 500ms)"]
+    },
+    "transition-duration": {
+      "description": "Sets the duration of a transition",
+      "values": ["<time>"]
+    },
+    "transition-property": {
+      "description": "Specifies the CSS property to transition",
+      "values": ["all", "<property-name>"]
+    },
+    "transition-timing-function": {
+      "description": "Defines the speed curve of a transition",
+      "values": ["ease", "linear", "ease-in", "ease-out", "ease-in-out"]
+    },
+    "vertical-align": {
+      "description": "Sets the vertical alignment of an inline or table-cell element",
+      "values": ["baseline", "top", "middle", "bottom", "text-top", "text-bottom", "<length>", "<percentage>"]
+    },
+    "visibility": {
+      "description": "Controls the visibility of an element",
+      "values": ["visible", "hidden", "collapse"]
+    },
+    "white-space": {
+      "description": "Controls how white space is handled",
+      "values": ["normal", "nowrap", "pre", "pre-line", "pre-wrap"]
+    },
+    "width": {
+      "description": "Sets the width of an element",
+      "values": ["<length>", "<percentage>", "auto"]
+    },
+    "word-break": {
+      "description": "Controls how words break at line ends",
+      "values": ["normal", "break-all", "keep-all"]
+    },
+    "word-spacing": {
+      "description": "Sets the spacing between words",
+      "values": ["<length>", "normal"]
+    },
+    "z-index": {
+      "description": "Sets the stack order of positioned elements",
+      "values": ["<number>", "auto"]
+    }
   }
 }
