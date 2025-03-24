@@ -1,245 +1,727 @@
 {
-  "a": {
-    "attributes": ["href", "target", "rel", "download", "hreflang", "type"]
-  },
-  "abbr": {
-    "attributes": ["title"]
-  },
-  "address": {
-    "attributes": []
-  },
-  "area": {
-    "attributes": ["alt", "coords", "shape", "href", "target", "download"]
-  },
-  "article": {
-    "attributes": []
-  },
-  "aside": {
-    "attributes": []
-  },
-  "audio": {
-    "attributes": ["src", "controls", "autoplay", "loop", "muted", "preload"]
-  },
-  "b": {
-    "attributes": []
-  },
-  "base": {
-    "attributes": ["href", "target"]
-  },
-  "bdi": {
-    "attributes": []
-  },
-  "bdo": {
-    "attributes": ["dir"]
-  },
-  "blockquote": {
-    "attributes": ["cite"]
-  },
-  "body": {
-    "attributes": ["onload", "onunload", "background", "bgcolor", "text", "link", "vlink", "alink"]
-  },
-  "br": {
-    "attributes": []
-  },
-  "button": {
-    "attributes": ["type", "name", "value", "disabled", "autofocus", "form", "formaction", "formenctype", "formmethod", "formnovalidate", "formtarget"]
-  },
-  "canvas": {
-    "attributes": ["width", "height"]
-  },
-  "caption": {
-    "attributes": []
-  },
-  "cite": {
-    "attributes": []
-  },
-  "code": {
-    "attributes": []
-  },
-  "col": {
-    "attributes": ["span", "width"]
-  },
-  "colgroup": {
-    "attributes": ["span", "width"]
-  },
-  "data": {
-    "attributes": ["value"]
-  },
-  "datalist": {
-    "attributes": []
-  },
-  "dd": {
-    "attributes": []
-  },
-  "del": {
-    "attributes": ["cite", "datetime"]
-  },
-  "details": {
-    "attributes": ["open"]
-  },
-  "dfn": {
-    "attributes": ["title"]
-  },
-  "dialog": {
-    "attributes": ["open"]
-  },
-  "div": {
-    "attributes": []
-  },
-  "dl": {
-    "attributes": []
-  },
-  "dt": {
-    "attributes": []
-  },
-  "em": {
-    "attributes": []
-  },
-  "embed": {
-    "attributes": ["src", "type", "width", "height"]
-  },
-  "fieldset": {
-    "attributes": ["disabled", "form", "name"]
-  },
-  "figcaption": {
-    "attributes": []
-  },
-  "figure": {
-    "attributes": []
-  },
-  "footer": {
-    "attributes": []
-  },
-  "form": {
-    "attributes": ["action", "method", "enctype", "autocomplete", "novalidate", "target", "name", "rel", "accept-charset"]
-  },
-  "h1": {
-    "attributes": []
-  },
-  "h2": {
-    "attributes": []
-  },
-  "h3": {
-    "attributes": []
-  },
-  "h4": {
-    "attributes": []
-  },
-  "h5": {
-    "attributes": []
-  },
-  "h6": {
-    "attributes": []
-  },
-  "head": {
-    "attributes": []
-  },
-  "header": {
-    "attributes": []
-  },
-  "hgroup": {
-    "attributes": []
-  },
-  "hr": {
-    "attributes": ["align", "noshade", "size", "width"]
-  },
-  "html": {
-    "attributes": ["lang", "dir"]
-  },
-  "i": {
-    "attributes": []
-  },
-  "iframe": {
-    "attributes": ["src", "name", "width", "height", "sandbox", "allow", "allowfullscreen", "loading", "referrerpolicy"]
-  },
-  "img": {
-    "attributes": ["src", "alt", "width", "height", "loading", "decoding", "ismap", "usemap", "longdesc"]
-  },
-  "input": {
-    "attributes": ["type", "name", "value", "placeholder", "required", "disabled", "readonly", "size", "maxlength", "min", "max", "step", "pattern", "autocomplete", "autofocus", "form", "formaction", "formenctype", "formmethod", "formnovalidate", "formtarget", "list", "multiple", "accept", "capture", "checked"]
-  },
-  "ins": {
-    "attributes": ["cite", "datetime"]
-  },
-  "kbd": {
-    "attributes": []
-  },
-  "label": {
-    "attributes": ["for", "form"]
-  },
-  "legend": {
-    "attributes": []
-  },
-  "li": {
-    "attributes": ["value"]
-  },
-  "link": {
-    "attributes": ["href", "rel", "type", "media", "hreflang", "sizes", "title", "integrity", "crossorigin"]
-  },
-  "main": {
-    "attributes": []
-  },
-  "map": {
-    "attributes": ["name"]
-  },
-  "mark": {
-    "attributes": []
-  },
-  "meta": {
-    "attributes": ["name", "content", "charset", "http-equiv"]
-  },
-  "meter": {
-    "attributes": ["value", "min", "max", "low", "high", "optimum"]
-  },
-  "nav": {
-    "attributes": []
-  },
-  "noscript": {
-    "attributes": []
-  },
-  "object": {
-    "attributes": ["data", "type", "width", "height", "form", "name", "usemap", "typemustmatch"]
-  },
-  "ol": {
-    "attributes": ["reversed", "start", "type"]
-  },
-  "optgroup": {
-    "attributes": ["label", "disabled"]
-  },
-  "option": {
-    "attributes": ["value", "label", "selected", "disabled"]
-  },
-  "output": {
-    "attributes": ["for", "form", "name"]
-  },
-  "p": {
-    "attributes": []
-  },
-  "param": {
-    "attributes": ["name", "value"]
-  },
-  "picture": {
-    "attributes": []
-  },
-  "pre": {
-    "attributes": []
-  },
-  "progress": {
-    "attributes": ["value", "max"]
-  },
-  "q": {
-    "attributes": ["cite"]
-  },
-  "rp": {
-    "attributes": []
-  },
-  "rt": {
-    "attributes": []
-  },
-  "ruby": {
-    "attributes": []
-  },
-  "s": {
-    "attributes": []
+  "global_attributes": [
+    "id", "class", "style", "title", "lang", "dir", "hidden", "tabindex", "data-*", "aria-*", "accesskey", "contenteditable", "draggable", "spellcheck", "translate"
+  ],
+  "tags": {
+    "a": {
+      "attributes": [
+        {"name": "href", "description": "URL of the linked resource"},
+        {"name": "target", "description": "Where to open the link", "values": ["_blank", "_self", "_parent", "_top"]},
+        {"name": "rel", "description": "Relationship to the linked resource", "values": ["nofollow", "noopener", "noreferrer", "alternate", "bookmark"]},
+        {"name": "download", "description": "Prompts download of the resource"},
+        {"name": "hreflang", "description": "Language of the linked resource"},
+        {"name": "type", "description": "MIME type of the linked resource"}
+      ],
+      "description": "Defines a hyperlink"
+    },
+    "abbr": {
+      "attributes": [
+        {"name": "title", "description": "Full term or expansion of the abbreviation"}
+      ],
+      "description": "Represents an abbreviation or acronym"
+    },
+    "address": {
+      "attributes": [],
+      "description": "Provides contact information for a document or section"
+    },
+    "area": {
+      "attributes": [
+        {"name": "alt", "description": "Alternative text for the area"},
+        {"name": "coords", "description": "Coordinates for the area shape"},
+        {"name": "shape", "description": "Shape of the area", "values": ["rect", "circle", "poly", "default"]},
+        {"name": "href", "description": "URL of the linked resource"},
+        {"name": "target", "description": "Where to open the link", "values": ["_blank", "_self", "_parent", "_top"]},
+        {"name": "download", "description": "Prompts download of the resource"}
+      ],
+      "description": "Defines a clickable area inside an image map"
+    },
+    "article": {
+      "attributes": [],
+      "description": "Represents a self-contained composition"
+    },
+    "aside": {
+      "attributes": [],
+      "description": "Defines content aside from the main content"
+    },
+    "audio": {
+      "attributes": [
+        {"name": "src", "description": "URL of the audio file"},
+        {"name": "controls", "description": "Displays audio controls", "boolean": true},
+        {"name": "autoplay", "description": "Plays audio automatically", "boolean": true},
+        {"name": "loop", "description": "Loops the audio", "boolean": true},
+        {"name": "muted", "description": "Mutes the audio", "boolean": true},
+        {"name": "preload", "description": "Hints how to preload", "values": ["auto", "metadata", "none"]}
+      ],
+      "description": "Embeds sound content"
+    },
+    "b": {
+      "attributes": [],
+      "description": "Represents text in bold (stylistic)"
+    },
+    "base": {
+      "attributes": [
+        {"name": "href", "description": "Base URL for relative links"},
+        {"name": "target", "description": "Default target for links", "values": ["_blank", "_self", "_parent", "_top"]}
+      ],
+      "description": "Specifies the base URL/target for all relative URLs"
+    },
+    "bdi": {
+      "attributes": [],
+      "description": "Isolates text for bidirectional formatting"
+    },
+    "bdo": {
+      "attributes": [
+        {"name": "dir", "description": "Direction of text", "values": ["ltr", "rtl"]}
+      ],
+      "description": "Overrides text directionality"
+    },
+    "blockquote": {
+      "attributes": [
+        {"name": "cite", "description": "URL of the quote source"}
+      ],
+      "description": "Defines a long quotation"
+    },
+    "body": {
+      "attributes": [
+        {"name": "onload", "description": "Script to run after page loads"},
+        {"name": "onunload", "description": "Script to run when page unloads"},
+        {"name": "background", "description": "Background image (deprecated)", "deprecated": true},
+        {"name": "bgcolor", "description": "Background color (deprecated)", "deprecated": true},
+        {"name": "text", "description": "Text color (deprecated)", "deprecated": true},
+        {"name": "link", "description": "Link color (deprecated)", "deprecated": true},
+        {"name": "vlink", "description": "Visited link color (deprecated)", "deprecated": true},
+        {"name": "alink", "description": "Active link color (deprecated)", "deprecated": true}
+      ],
+      "description": "Represents the content of the document"
+    },
+    "br": {
+      "attributes": [],
+      "description": "Inserts a line break"
+    },
+    "button": {
+      "attributes": [
+        {"name": "type", "description": "Button type", "values": ["button", "submit", "reset"]},
+        {"name": "name", "description": "Name of the button"},
+        {"name": "value", "description": "Initial value of the button"},
+        {"name": "disabled", "description": "Disables the button", "boolean": true},
+        {"name": "autofocus", "description": "Focuses on page load", "boolean": true},
+        {"name": "form", "description": "Associated form ID"},
+        {"name": "formaction", "description": "URL to send form data"},
+        {"name": "formenctype", "description": "Encoding type", "values": ["application/x-www-form-urlencoded", "multipart/form-data", "text/plain"]},
+        {"name": "formmethod", "description": "HTTP method", "values": ["get", "post"]},
+        {"name": "formnovalidate", "description": "Skips validation", "boolean": true},
+        {"name": "formtarget", "description": "Target for form response", "values": ["_blank", "_self", "_parent", "_top"]}
+      ],
+      "description": "Creates a clickable button"
+    },
+    "canvas": {
+      "attributes": [
+        {"name": "width", "description": "Width of the canvas"},
+        {"name": "height", "description": "Height of the canvas"}
+      ],
+      "description": "Used to draw graphics via scripting"
+    },
+    "caption": {
+      "attributes": [],
+      "description": "Defines a table caption"
+    },
+    "cite": {
+      "attributes": [],
+      "description": "Represents a reference to a creative work"
+    },
+    "code": {
+      "attributes": [],
+      "description": "Displays a piece of computer code"
+    },
+    "col": {
+      "attributes": [
+        {"name": "span", "description": "Number of columns to span"},
+        {"name": "width", "description": "Width of the column (deprecated)", "deprecated": true}
+      ],
+      "description": "Specifies column properties for a table"
+    },
+    "colgroup": {
+      "attributes": [
+        {"name": "span", "description": "Number of columns to span"},
+        {"name": "width", "description": "Width of the column group (deprecated)", "deprecated": true}
+      ],
+      "description": "Groups columns in a table"
+    },
+    "data": {
+      "attributes": [
+        {"name": "value", "description": "Machine-readable value"}
+      ],
+      "description": "Links content with a machine-readable value"
+    },
+    "datalist": {
+      "attributes": [],
+      "description": "Contains a set of predefined options for input"
+    },
+    "dd": {
+      "attributes": [],
+      "description": "Provides a description in a description list"
+    },
+    "del": {
+      "attributes": [
+        {"name": "cite", "description": "URL explaining the deletion"},
+        {"name": "datetime", "description": "Date and time of the deletion"}
+      ],
+      "description": "Represents deleted text"
+    },
+    "details": {
+      "attributes": [
+        {"name": "open", "description": "Shows details by default", "boolean": true}
+      ],
+      "description": "Creates a disclosure widget"
+    },
+    "dfn": {
+      "attributes": [
+        {"name": "title", "description": "Term being defined"}
+      ],
+      "description": "Marks a term being defined"
+    },
+    "dialog": {
+      "attributes": [
+        {"name": "open", "description": "Displays the dialog", "boolean": true}
+      ],
+      "description": "Defines a dialog box or window"
+    },
+    "div": {
+      "attributes": [],
+      "description": "Defines a division or section"
+    },
+    "dl": {
+      "attributes": [],
+      "description": "Defines a description list"
+    },
+    "dt": {
+      "attributes": [],
+      "description": "Defines a term in a description list"
+    },
+    "em": {
+      "attributes": [],
+      "description": "Marks emphasized text"
+    },
+    "embed": {
+      "attributes": [
+        {"name": "src", "description": "URL of the embedded content"},
+        {"name": "type", "description": "MIME type of the content"},
+        {"name": "width", "description": "Width of the embedded content"},
+        {"name": "height", "description": "Height of the embedded content"}
+      ],
+      "description": "Embeds external content"
+    },
+    "fieldset": {
+      "attributes": [
+        {"name": "disabled", "description": "Disables all form elements inside", "boolean": true},
+        {"name": "form", "description": "Associated form ID"},
+        {"name": "name", "description": "Name of the fieldset"}
+      ],
+      "description": "Groups related form elements"
+    },
+    "figcaption": {
+      "attributes": [],
+      "description": "Defines a caption for a figure"
+    },
+    "figure": {
+      "attributes": [],
+      "description": "Groups self-contained content like images"
+    },
+    "footer": {
+      "attributes": [],
+      "description": "Defines a footer for a document or section"
+    },
+    "form": {
+      "attributes": [
+        {"name": "action", "description": "URL to send form data"},
+        {"name": "method", "description": "HTTP method", "values": ["get", "post"]},
+        {"name": "enctype", "description": "Encoding type", "values": ["application/x-www-form-urlencoded", "multipart/form-data", "text/plain"]},
+        {"name": "autocomplete", "description": "Enables autocomplete", "values": ["on", "off"]},
+        {"name": "novalidate", "description": "Skips validation", "boolean": true},
+        {"name": "target", "description": "Where to display response", "values": ["_blank", "_self", "_parent", "_top"]},
+        {"name": "name", "description": "Name of the form"},
+        {"name": "rel", "description": "Relationship to the target", "values": ["external", "nofollow"]},
+        {"name": "accept-charset", "description": "Character sets for form submission"}
+      ],
+      "description": "Creates a form for user input"
+    },
+    "h1": {
+      "attributes": [],
+      "description": "Defines a top-level heading"
+    },
+    "h2": {
+      "attributes": [],
+      "description": "Defines a second-level heading"
+    },
+    "h3": {
+      "attributes": [],
+      "description": "Defines a third-level heading"
+    },
+    "h4": {
+      "attributes": [],
+      "description": "Defines a fourth-level heading"
+    },
+    "h5": {
+      "attributes": [],
+      "description": "Defines a fifth-level heading"
+    },
+    "h6": {
+      "attributes": [],
+      "description": "Defines a sixth-level heading"
+    },
+    "head": {
+      "attributes": [],
+      "description": "Contains metadata about the document"
+    },
+    "header": {
+      "attributes": [],
+      "description": "Defines a header for a document or section"
+    },
+    "hgroup": {
+      "attributes": [],
+      "description": "Groups heading elements (h1-h6)"
+    },
+    "hr": {
+      "attributes": [
+        {"name": "align", "description": "Alignment (deprecated)", "deprecated": true},
+        {"name": "noshade", "description": "No shading (deprecated)", "deprecated": true},
+        {"name": "size", "description": "Height (deprecated)", "deprecated": true},
+        {"name": "width", "description": "Width (deprecated)", "deprecated": true}
+      ],
+      "description": "Represents a thematic break"
+    },
+    "html": {
+      "attributes": [
+        {"name": "lang", "description": "Primary language of the document"},
+        {"name": "dir", "description": "Text direction", "values": ["ltr", "rtl"]}
+      ],
+      "description": "Root element of an HTML page"
+    },
+    "i": {
+      "attributes": [],
+      "description": "Represents text in italics (stylistic)"
+    },
+    "iframe": {
+      "attributes": [
+        {"name": "src", "description": "URL of the embedded page"},
+        {"name": "name", "description": "Name of the iframe"},
+        {"name": "width", "description": "Width of the iframe"},
+        {"name": "height", "description": "Height of the iframe"},
+        {"name": "sandbox", "description": "Restricts iframe content", "values": ["allow-forms", "allow-scripts", "allow-same-origin"]},
+        {"name": "allow", "description": "Permissions for iframe features"},
+        {"name": "allowfullscreen", "description": "Allows fullscreen mode", "boolean": true},
+        {"name": "loading", "description": "Loading behavior", "values": ["eager", "lazy"]}
+      ],
+      "description": "Embeds another HTML page"
+    },
+    "img": {
+      "attributes": [
+        {"name": "src", "description": "URL of the image"},
+        {"name": "alt", "description": "Alternative text for accessibility"},
+        {"name": "width", "description": "Width of the image"},
+        {"name": "height", "description": "Height of the image"},
+        {"name": "loading", "description": "Loading behavior", "values": ["eager", "lazy"]},
+        {"name": "decoding", "description": "Decoding hint", "values": ["sync", "async", "auto"]},
+        {"name": "ismap", "description": "Part of a server-side image map", "boolean": true},
+        {"name": "usemap", "description": "Name of a client-side image map"},
+        {"name": "longdesc", "description": "URL to detailed description (deprecated)", "deprecated": true}
+      ],
+      "description": "Embeds an image"
+    },
+    "input": {
+      "attributes": [
+        {"name": "type", "description": "Type of input", "values": ["text", "password", "email", "number", "checkbox", "radio", "file", "submit", "button"]},
+        {"name": "name", "description": "Name of the input"},
+        {"name": "value", "description": "Initial value"},
+        {"name": "placeholder", "description": "Hint for expected value"},
+        {"name": "required", "description": "Field must be filled", "boolean": true},
+        {"name": "disabled", "description": "Disables the input", "boolean": true},
+        {"name": "readonly", "description": "Makes input read-only", "boolean": true},
+        {"name": "size", "description": "Visible width in characters"},
+        {"name": "maxlength", "description": "Maximum number of characters"},
+        {"name": "min", "description": "Minimum value (for numeric inputs)"},
+        {"name": "max", "description": "Maximum value (for numeric inputs)"},
+        {"name": "step", "description": "Increment step (for numeric inputs)"},
+        {"name": "pattern", "description": "Regex pattern for validation"},
+        {"name": "autocomplete", "description": "Enables autocomplete", "values": ["on", "off"]},
+        {"name": "autofocus", "description": "Focuses on page load", "boolean": true},
+        {"name": "form", "description": "Associated form ID"},
+        {"name": "formaction", "description": "URL to send form data"},
+        {"name": "formenctype", "description": "Encoding type", "values": ["application/x-www-form-urlencoded", "multipart/form-data", "text/plain"]},
+        {"name": "formmethod", "description": "HTTP method", "values": ["get", "post"]},
+        {"name": "formnovalidate", "description": "Skips validation", "boolean": true},
+        {"name": "formtarget", "description": "Target for form response", "values": ["_blank", "_self", "_parent", "_top"]},
+        {"name": "list", "description": "ID of a datalist"},
+        {"name": "multiple", "description": "Allows multiple values", "boolean": true},
+        {"name": "accept", "description": "File types for file input"},
+        {"name": "capture", "description": "Media capture source", "values": ["user", "environment"]},
+        {"name": "checked", "description": "Preselects checkbox/radio", "boolean": true}
+      ],
+      "description": "Creates an input field"
+    },
+    "ins": {
+      "attributes": [
+        {"name": "cite", "description": "URL explaining the insertion"},
+        {"name": "datetime", "description": "Date and time of the insertion"}
+      ],
+      "description": "Represents inserted text"
+    },
+    "kbd": {
+      "attributes": [],
+      "description": "Represents keyboard input"
+    },
+    "label": {
+      "attributes": [
+        {"name": "for", "description": "ID of the associated form element"},
+        {"name": "form", "description": "Associated form ID"}
+      ],
+      "description": "Provides a label for a form element"
+    },
+    "legend": {
+      "attributes": [],
+      "description": "Defines a caption for a fieldset"
+    },
+    "li": {
+      "attributes": [
+        {"name": "value", "description": "Numeric value for ordered lists"}
+      ],
+      "description": "Defines a list item"
+    },
+    "link": {
+      "attributes": [
+        {"name": "href", "description": "URL of the linked resource"},
+        {"name": "rel", "description": "Relationship to the resource", "values": ["stylesheet", "icon", "nofollow", "noopener"]},
+        {"name": "type", "description": "MIME type of the resource"},
+        {"name": "media", "description": "Applicable media", "values": ["screen", "print", "all"]},
+        {"name": "hreflang", "description": "Language of the resource"},
+        {"name": "sizes", "description": "Sizes for icons"},
+        {"name": "title", "description": "Title of the linked resource"},
+        {"name": "integrity", "description": "Cryptographic hash for integrity"},
+        {"name": "crossorigin", "description": "CORS settings", "values": ["anonymous", "use-credentials"]}
+      ],
+      "description": "Links to external resources like stylesheets"
+    },
+    "main": {
+      "attributes": [],
+      "description": "Represents the main content of the document"
+    },
+    "map": {
+      "attributes": [
+        {"name": "name", "description": "Name of the image map"}
+      ],
+      "description": "Defines a client-side image map"
+    },
+    "mark": {
+      "attributes": [],
+      "description": "Highlights text for reference"
+    },
+    "meta": {
+      "attributes": [
+        {"name": "name", "description": "Metadata name"},
+        {"name": "content", "description": "Metadata value"},
+        {"name": "charset", "description": "Character encoding (e.g., UTF-8)"},
+        {"name": "http-equiv", "description": "HTTP header equivalent", "values": ["content-type", "refresh"]}
+      ],
+      "description": "Provides metadata about the document"
+    },
+    "meter": {
+      "attributes": [
+        {"name": "value", "description": "Current value"},
+        {"name": "min", "description": "Minimum value"},
+        {"name": "max", "description": "Maximum value"},
+        {"name": "low", "description": "Lower bound of acceptable range"},
+        {"name": "high", "description": "Upper bound of acceptable range"},
+        {"name": "optimum", "description": "Optimal value"}
+      ],
+      "description": "Represents a scalar measurement"
+    },
+    "nav": {
+      "attributes": [],
+      "description": "Defines a navigation section"
+    },
+    "noscript": {
+      "attributes": [],
+      "description": "Content to display if scripts are disabled"
+    },
+    "object": {
+      "attributes": [
+        {"name": "data", "description": "URL of the resource"},
+        {"name": "type", "description": "MIME type of the resource"},
+        {"name": "width", "description": "Width of the object"},
+        {"name": "height", "description": "Height of the object"},
+        {"name": "form", "description": "Associated form ID"},
+        {"name": "name", "description": "Name of the object"},
+        {"name": "usemap", "description": "Name of a client-side image map"},
+        {"name": "typemustmatch", "description": "Type must match data", "boolean": true}
+      ],
+      "description": "Embeds an external resource"
+    },
+    "ol": {
+      "attributes": [
+        {"name": "reversed", "description": "Reverses the order", "boolean": true},
+        {"name": "start", "description": "Starting number"},
+        {"name": "type", "description": "List marker type", "values": ["1", "A", "a", "I", "i"]}
+      ],
+      "description": "Defines an ordered list"
+    },
+    "optgroup": {
+      "attributes": [
+        {"name": "label", "description": "Label for the group"},
+        {"name": "disabled", "description": "Disables the group", "boolean": true}
+      ],
+      "description": "Groups options in a select element"
+    },
+    "option": {
+      "attributes": [
+        {"name": "value", "description": "Value to submit"},
+        {"name": "label", "description": "Text to display"},
+        {"name": "selected", "description": "Preselects the option", "boolean": true},
+        {"name": "disabled", "description": "Disables the option", "boolean": true}
+      ],
+      "description": "Defines an option in a select list"
+    },
+    "output": {
+      "attributes": [
+        {"name": "for", "description": "IDs of related elements"},
+        {"name": "form", "description": "Associated form ID"},
+        {"name": "name", "description": "Name of the output"}
+      ],
+      "description": "Represents the result of a calculation"
+    },
+    "p": {
+      "attributes": [],
+      "description": "Defines a paragraph"
+    },
+    "param": {
+      "attributes": [
+        {"name": "name", "description": "Parameter name"},
+        {"name": "value", "description": "Parameter value"}
+      ],
+      "description": "Defines a parameter for an object"
+    },
+    "picture": {
+      "attributes": [],
+      "description": "Contains multiple image sources"
+    },
+    "pre": {
+      "attributes": [],
+      "description": "Displays preformatted text"
+    },
+    "progress": {
+      "attributes": [
+        {"name": "value", "description": "Current progress"},
+        {"name": "max", "description": "Maximum value"}
+      ],
+      "description": "Represents task progress"
+    },
+    "q": {
+      "attributes": [
+        {"name": "cite", "description": "URL of the quote source"}
+      ],
+      "description": "Defines a short quotation"
+    },
+    "rp": {
+      "attributes": [],
+      "description": "Fallback content for ruby annotations"
+    },
+    "rt": {
+      "attributes": [],
+      "description": "Text of a ruby annotation"
+    },
+    "ruby": {
+      "attributes": [],
+      "description": "Represents ruby annotations"
+    },
+    "s": {
+      "attributes": [],
+      "description": "Represents strikethrough text"
+    },
+    "samp": {
+      "attributes": [],
+      "description": "Represents sample output"
+    },
+    "script": {
+      "attributes": [
+        {"name": "src", "description": "URL of the script"},
+        {"name": "type", "description": "Script type", "values": ["text/javascript", "module"]},
+        {"name": "async", "description": "Executes script asynchronously", "boolean": true},
+        {"name": "defer", "description": "Defers script execution", "boolean": true},
+        {"name": "integrity", "description": "Cryptographic hash for integrity"},
+        {"name": "crossorigin", "description": "CORS settings", "values": ["anonymous", "use-credentials"]}
+      ],
+      "description": "Embeds or references a script"
+    },
+    "section": {
+      "attributes": [],
+      "description": "Represents a standalone section"
+    },
+    "select": {
+      "attributes": [
+        {"name": "name", "description": "Name of the select"},
+        {"name": "multiple", "description": "Allows multiple selections", "boolean": true},
+        {"name": "required", "description": "Field must be selected", "boolean": true},
+        {"name": "disabled", "description": "Disables the select", "boolean": true},
+        {"name": "autofocus", "description": "Focuses on page load", "boolean": true},
+        {"name": "form", "description": "Associated form ID"},
+        {"name": "size", "description": "Number of visible options"}
+      ],
+      "description": "Creates a dropdown list"
+    },
+    "small": {
+      "attributes": [],
+      "description": "Represents smaller text (e.g., fine print)"
+    },
+    "source": {
+      "attributes": [
+        {"name": "src", "description": "URL of the media resource"},
+        {"name": "type", "description": "MIME type of the resource"},
+        {"name": "media", "description": "Applicable media", "values": ["screen", "print", "all"]},
+        {"name": "srcset", "description": "Set of image sources"},
+        {"name": "sizes", "description": "Sizes for responsive images"}
+      ],
+      "description": "Specifies media resources for picture, audio, or video"
+    },
+    "span": {
+      "attributes": [],
+      "description": "Groups inline content"
+    },
+    "strong": {
+      "attributes": [],
+      "description": "Indicates strong importance"
+    },
+    "style": {
+      "attributes": [
+        {"name": "type", "description": "MIME type", "values": ["text/css"]},
+        {"name": "media", "description": "Applicable media", "values": ["screen", "print", "all"]}
+      ],
+      "description": "Defines style information"
+    },
+    "sub": {
+      "attributes": [],
+      "description": "Defines subscript text"
+    },
+    "summary": {
+      "attributes": [],
+      "description": "Defines a summary for a details element"
+    },
+    "sup": {
+      "attributes": [],
+      "description": "Defines superscript text"
+    },
+    "svg": {
+      "attributes": [
+        {"name": "width", "description": "Width of the SVG"},
+        {"name": "height", "description": "Height of the SVG"},
+        {"name": "viewBox", "description": "Coordinate system for the SVG"},
+        {"name": "preserveAspectRatio", "description": "Aspect ratio behavior"}
+      ],
+      "description": "Defines a container for SVG graphics"
+    },
+    "table": {
+      "attributes": [],
+      "description": "Defines a table"
+    },
+    "tbody": {
+      "attributes": [],
+      "description": "Groups body content in a table"
+    },
+    "td": {
+      "attributes": [
+        {"name": "colspan", "description": "Number of columns to span"},
+        {"name": "rowspan", "description": "Number of rows to span"},
+        {"name": "headers", "description": "IDs of associated header cells"}
+      ],
+      "description": "Defines a table cell"
+    },
+    "template": {
+      "attributes": [],
+      "description": "Holds content as a template"
+    },
+    "textarea": {
+      "attributes": [
+        {"name": "name", "description": "Name of the textarea"},
+        {"name": "rows", "description": "Number of visible rows"},
+        {"name": "cols", "description": "Number of visible columns"},
+        {"name": "placeholder", "description": "Hint for expected value"},
+        {"name": "required", "description": "Field must be filled", "boolean": true},
+        {"name": "disabled", "description": "Disables the textarea", "boolean": true},
+        {"name": "readonly", "description": "Makes textarea read-only", "boolean": true},
+        {"name": "maxlength", "description": "Maximum number of characters"},
+        {"name": "autofocus", "description": "Focuses on page load", "boolean": true},
+        {"name": "form", "description": "Associated form ID"}
+      ],
+      "description": "Creates a multiline text input"
+    },
+    "tfoot": {
+      "attributes": [],
+      "description": "Groups footer content in a table"
+    },
+    "th": {
+      "attributes": [
+        {"name": "colspan", "description": "Number of columns to span"},
+        {"name": "rowspan", "description": "Number of rows to span"},
+        {"name": "headers", "description": "IDs of associated header cells"},
+        {"name": "scope", "description": "Scope of the header", "values": ["row", "col", "rowgroup", "colgroup"]}
+      ],
+      "description": "Defines a table header cell"
+    },
+    "thead": {
+      "attributes": [],
+      "description": "Groups header content in a table"
+    },
+    "time": {
+      "attributes": [
+        {"name": "datetime", "description": "Machine-readable date/time"}
+      ],
+      "description": "Represents a specific time or date"
+    },
+    "title": {
+      "attributes": [],
+      "description": "Defines the document’s title"
+    },
+    "tr": {
+      "attributes": [],
+      "description": "Defines a table row"
+    },
+    "track": {
+      "attributes": [
+        {"name": "src", "description": "URL of the track file"},
+        {"name": "kind", "description": "Type of track", "values": ["subtitles", "captions", "descriptions", "chapters", "metadata"]},
+        {"name": "srclang", "description": "Language of the track"},
+        {"name": "label", "description": "Label for the track"},
+        {"name": "default", "description": "Enables track by default", "boolean": true}
+      ],
+      "description": "Adds text tracks to media elements"
+    },
+    "u": {
+      "attributes": [],
+      "description": "Represents underlined text (stylistic)"
+    },
+    "ul": {
+      "attributes": [],
+      "description": "Defines an unordered list"
+    },
+    "var": {
+      "attributes": [],
+      "description": "Represents a variable"
+    },
+    "video": {
+      "attributes": [
+        {"name": "src", "description": "URL of the video"},
+        {"name": "controls", "description": "Displays video controls", "boolean": true},
+        {"name": "autoplay", "description": "Plays video automatically", "boolean": true},
+        {"name": "loop", "description": "Loops the video", "boolean": true},
+        {"name": "muted", "description": "Mutes the video", "boolean": true},
+        {"name": "preload", "description": "Hints how to preload", "values": ["auto", "metadata", "none"]},
+        {"name": "width", "description": "Width of the video"},
+        {"name": "height", "description": "Height of the video"},
+        {"name": "poster", "description": "URL of an image to show before playback"}
+      ],
+      "description": "Embeds video content"
+    },
+    "wbr": {
+      "attributes": [],
+      "description": "Represents a word break opportunity"
+    }
   }
 }
